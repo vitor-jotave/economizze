@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,21 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'flash' => [
+                'success' => fn (): ?array => $request->session()->get('success'),
+            ],
+            'notificationCenter' => [
+                'activities' => fn (): array => Activity::query()
+                    ->recent()
+                    ->get()
+                    ->map(fn (Activity $activity): array => [
+                        'id' => (string) $activity->id,
+                        'title' => $activity->title,
+                        'time' => $activity->created_at?->diffForHumans() ?? 'Agora mesmo',
+                        'tone' => $activity->tone,
+                    ])
+                    ->all(),
+            ],
             'auth' => [
                 'user' => $request->user(),
             ],

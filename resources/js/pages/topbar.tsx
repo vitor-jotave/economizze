@@ -31,9 +31,11 @@ function AppIcon({
 export default function Topbar({
     isNotificationsOpen,
     onToggleNotifications,
+    title,
 }: {
     isNotificationsOpen: boolean;
     onToggleNotifications: () => void;
+    title: string;
 }): ReactElement {
     return (
         <header className="fixed top-0 right-0 left-0 z-20 border-b border-[#171C24] bg-[rgba(5,8,12,0.9)] backdrop-blur-xl xl:left-[280px]">
@@ -64,9 +66,9 @@ export default function Topbar({
                         </svg>
                     </AppIcon>
                     <div className="flex items-center gap-3 text-[18px]">
-                        <span className="text-[#4E5662]">Dashboards</span>
+                        <span className="text-[#4E5662]">Finance</span>
                         <span className="text-[#5C636E]">/</span>
-                        <span className="font-medium text-white">Overview</span>
+                        <span className="font-medium text-white">{title}</span>
                     </div>
                 </div>
 
