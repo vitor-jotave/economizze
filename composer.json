@@ -1,13 +1,17 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/blank-react-starter-kit",
+    "name": "vitor-jotave/economizze",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Aplicacao web de gestao financeira pessoal construida com Laravel, Inertia e React.",
     "keywords": [
         "laravel",
-        "framework"
+        "react",
+        "inertia",
+        "financas",
+        "gestao-financeira",
+        "personal-finance"
     ],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
