@@ -14,6 +14,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { home, reports } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
 import { index as categoriesIndex } from '@/routes/categories';
+import {
+    accounts as reportAccounts,
+    cashflow as reportCashflow,
+    categories as reportCategories,
+} from '@/routes/reports';
 import { index as transactionsIndex } from '@/routes/transactions';
 import type { QuickSearchItem } from '@/types/quick-search';
 
@@ -138,11 +143,55 @@ export default function QuickActionsPalette({
             {
                 id: 'go-reports',
                 kind: 'action',
-                title: 'Relatório de despesas',
+                title: 'Hub de relatórios',
                 description: 'Abrir a área de análises',
                 keywords: ['reports', 'relatorio', 'despesas', 'analises'],
                 icon: <FileBarChart2 className="h-4 w-4" strokeWidth={1.9} />,
                 onSelect: () => router.visit(reports.url()),
+            },
+            {
+                id: 'go-report-categories',
+                kind: 'action',
+                title: 'Gastos por categoria',
+                description: 'Abrir a análise detalhada por categoria',
+                keywords: [
+                    'reports',
+                    'categorias',
+                    'gastos',
+                    'despesas por categoria',
+                ],
+                icon: <FileBarChart2 className="h-4 w-4" strokeWidth={1.9} />,
+                onSelect: () => router.visit(reportCategories.url()),
+            },
+            {
+                id: 'go-report-accounts',
+                kind: 'action',
+                title: 'Saúde das contas',
+                description: 'Abrir a análise estrutural das suas contas',
+                keywords: [
+                    'reports',
+                    'contas',
+                    'saude das contas',
+                    'saldo',
+                    'cash structure',
+                ],
+                icon: <FileBarChart2 className="h-4 w-4" strokeWidth={1.9} />,
+                onSelect: () => router.visit(reportAccounts.url()),
+            },
+            {
+                id: 'go-report-cashflow',
+                kind: 'action',
+                title: 'Fluxo por período',
+                description: 'Abrir a análise temporal de entradas e saídas',
+                keywords: [
+                    'reports',
+                    'cashflow',
+                    'fluxo',
+                    'periodo',
+                    'entradas e saidas',
+                ],
+                icon: <FileBarChart2 className="h-4 w-4" strokeWidth={1.9} />,
+                onSelect: () => router.visit(reportCashflow.url()),
             },
         ],
         [],

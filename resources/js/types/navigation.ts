@@ -5,7 +5,10 @@ export type SidebarPage =
     | 'accounts'
     | 'categories'
     | 'transactions'
-    | 'reports';
+    | 'reports'
+    | 'reports-accounts'
+    | 'reports-cashflow'
+    | 'reports-categories';
 
 export type NavigationItem = {
     label: string;

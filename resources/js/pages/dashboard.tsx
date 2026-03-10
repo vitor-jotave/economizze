@@ -5,7 +5,8 @@ import { useState } from 'react';
 import AppButton from '@/components/app-button';
 import CategoryIconGlyph from '@/components/category-icon-glyph';
 import { formatBrazilianCurrency } from '@/lib/utils';
-import { home, reports } from '@/routes';
+import { home } from '@/routes';
+import { categories as reportCategories } from '@/routes/reports';
 import type {
     DashboardCategoryBreakdown,
     DashboardPageProps,
@@ -433,7 +434,9 @@ export default function Dashboard(): ReactElement {
                                                 variant="dark"
                                                 className="w-full sm:w-auto"
                                                 onClick={() =>
-                                                    router.visit(reports.url())
+                                                    router.visit(
+                                                        reportCategories.url(),
+                                                    )
                                                 }
                                             >
                                                 Ver mais categorias

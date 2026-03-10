@@ -24,7 +24,10 @@ export default function Layout({
         | 'accounts'
         | 'categories'
         | 'transactions'
-        | 'reports';
+        | 'reports'
+        | 'reports-accounts'
+        | 'reports-cashflow'
+        | 'reports-categories';
     title: string;
 }): ReactElement {
     const { flash, notificationCenter, quickSearch } = usePage<{

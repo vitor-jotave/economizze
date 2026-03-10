@@ -1,7 +1,11 @@
 import { DollarSign, Tags } from 'lucide-react';
-import { home } from '@/routes';
+import { home, reports } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
-import { reports } from '@/routes';
+import {
+    accounts as reportAccounts,
+    cashflow as reportCashflow,
+    categories as reportCategories,
+} from '@/routes/reports';
 import { index as transactionsIndex } from '@/routes/transactions';
 import type { NavigationSection, SidebarPage } from '@/types/navigation';
 import { index as categoriesIndex } from '@/routes/categories';
@@ -93,8 +97,8 @@ export function getSidebarSections(
             title: 'Análises',
             items: [
                 {
-                    label: 'Reports',
-                    breadcrumbLabel: 'Despesas',
+                    label: 'Hub',
+                    breadcrumbLabel: 'Hub',
                     href: reports.url(),
                     active: currentPage === 'reports',
                     icon: (
@@ -112,6 +116,38 @@ export function getSidebarSections(
                                 rx="1.5"
                             />
                             <rect x="17" y="4" width="3" height="16" rx="1.5" />
+                        </svg>
+                    ),
+                },
+                {
+                    label: 'Gastos p/ Categoria',
+                    breadcrumbLabel: 'Categorias',
+                    href: reportCategories.url(),
+                    active: currentPage === 'reports-categories',
+                    icon: <Tags className="h-4 w-4" strokeWidth={1.8} />,
+                },
+                {
+                    label: 'Fluxo p/ Período',
+                    breadcrumbLabel: 'Fluxo',
+                    href: reportCashflow.url(),
+                    active: currentPage === 'reports-cashflow',
+                    icon: <DollarSign className="h-4 w-4" strokeWidth={1.8} />,
+                },
+                {
+                    label: 'Saúde das Contas',
+                    breadcrumbLabel: 'Contas',
+                    href: reportAccounts.url(),
+                    active: currentPage === 'reports-accounts',
+                    icon: (
+                        <svg
+                            viewBox="0 0 24 24"
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                        >
+                            <rect x="3" y="5" width="18" height="14" rx="3" />
+                            <path d="M3 10h18" />
                         </svg>
                     ),
                 },

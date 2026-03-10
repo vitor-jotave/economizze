@@ -27,3 +27,9 @@ Route::resource('transactions', TransactionController::class)->only([
     'destroy',
 ]);
 Route::get('reports', [ReportsController::class, 'index'])->name('reports');
+Route::get('reports/accounts', [ReportsController::class, 'accounts'])
+    ->name('reports.accounts');
+Route::get('reports/cashflow', [ReportsController::class, 'cashflow'])
+    ->name('reports.cashflow');
+Route::get('reports/categories', [ReportsController::class, 'categories'])
+    ->name('reports.categories');
