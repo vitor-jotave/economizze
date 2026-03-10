@@ -1,5 +1,6 @@
 import { home } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
+import { index as transactionsIndex } from '@/routes/transactions';
 import type { NavigationSection, SidebarPage } from '@/types/navigation';
 import { index as categoriesIndex } from '@/routes/categories';
 
@@ -73,8 +74,9 @@ export function getSidebarSections(
                     ),
                 },
                 {
-                    label: 'Transactions',
-                    dimmed: true,
+                    label: 'Transações',
+                    href: transactionsIndex.url(),
+                    active: currentPage === 'transactions',
                     icon: (
                         <svg
                             viewBox="0 0 24 24"
@@ -90,7 +92,7 @@ export function getSidebarSections(
                     ),
                 },
                 {
-                    label: 'Categories',
+                    label: 'Categorias',
                     href: categoriesIndex.url(),
                     active: currentPage === 'categories',
                     icon: (

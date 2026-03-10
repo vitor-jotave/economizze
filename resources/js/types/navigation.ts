@@ -1,6 +1,10 @@
 import type { ReactElement } from 'react';
 
-export type SidebarPage = 'dashboard' | 'accounts' | 'categories';
+export type SidebarPage =
+    | 'dashboard'
+    | 'accounts'
+    | 'categories'
+    | 'transactions';
 
 export type NavigationItem = {
     label: string;
