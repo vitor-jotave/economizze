@@ -4,7 +4,8 @@ export type SidebarPage =
     | 'dashboard'
     | 'accounts'
     | 'categories'
-    | 'transactions';
+    | 'transactions'
+    | 'reports';
 
 export type NavigationItem = {
     label: string;

@@ -177,7 +177,7 @@ export default function AccountComposerModal({
                             layout
                             className={[
                                 'relative w-full overflow-hidden rounded-[34px] border border-[#1B212C] bg-[#11161D] shadow-[0_40px_120px_rgba(0,0,0,0.48)]',
-                                data.type ? 'max-w-[940px]' : 'max-w-[680px]',
+                                data.type ? 'max-w-235' : 'max-w-170',
                             ].join(' ')}
                         >
                             <AnimatePresence>
@@ -237,10 +237,10 @@ export default function AccountComposerModal({
                                         <div className="space-y-5">
                                             <div className="flex items-center justify-between">
                                                 <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                                    Step 01
+                                                    Passo 01
                                                 </p>
                                                 <p className="text-[13px] text-[#95A0AE]">
-                                                    Select your account format
+                                                    Selecione o tipo de conta
                                                 </p>
                                             </div>
 
@@ -416,7 +416,7 @@ export default function AccountComposerModal({
                                                 <p className="text-[13px] tracking-[0.14em] text-[#DBE5F1] uppercase">
                                                     Passo 02
                                                 </p>
-                                                <h3 className="mt-3 font-['Space_Grotesk'] text-[26px] font-medium tracking-tighter text-white">
+                                                <h3 className="mt-3 font-mono text-[26px] font-medium tracking-tighter text-white">
                                                     Preencha as Informações
                                                 </h3>
                                                 <p className="mt-2 text-[14px] leading-6 text-[#D7E1EC]">
@@ -544,7 +544,7 @@ export default function AccountComposerModal({
                                                             <label className="text-[13px] tracking-[0.12em] text-[#7F8794] uppercase">
                                                                 Cor
                                                             </label>
-                                                            <div className="space-y-3 rounded-[24px] border border-[#1F252F] bg-[#10151C] p-4">
+                                                            <div className="space-y-3 rounded-3xl border border-[#1F252F] bg-[#10151C] p-4">
                                                                 <div className="flex flex-nowrap items-center gap-1.5 overflow-hidden">
                                                                     {accountColorPresets.map(
                                                                         (
@@ -650,7 +650,7 @@ export default function AccountComposerModal({
                                         >
                                             <div className="overflow-hidden rounded-[30px] border border-[#1D2430] bg-[#0E131A]">
                                                 <div
-                                                    className="relative min-h-[220px] overflow-hidden px-6 py-6"
+                                                    className="relative min-h-55 overflow-hidden px-6 py-6"
                                                     style={{
                                                         backgroundImage: `linear-gradient(180deg, rgba(${previewColorRgb}, 0.3), rgba(${previewColorRgb}, 0.08))`,
                                                     }}
@@ -689,7 +689,7 @@ export default function AccountComposerModal({
                                                                 )?.label
                                                             }
                                                         </p>
-                                                        <p className="mt-3 font-['Space_Grotesk'] text-[34px] leading-none font-medium tracking-[-0.05em] text-white">
+                                                        <p className="mt-3 font-mono text-[34px] leading-none font-medium tracking-[-0.05em] text-white">
                                                             {data.name ||
                                                                 'Principal'}
                                                         </p>

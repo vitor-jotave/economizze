@@ -2,5 +2,6 @@ export type * from './auth';
 export type * from './accounts';
 export type * from './navigation';
 export type * from './categories';
+export type * from './dashboard';
 export type * from './notification-center';
 export type * from './transactions';

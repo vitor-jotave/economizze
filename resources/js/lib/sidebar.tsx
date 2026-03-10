@@ -1,5 +1,6 @@
 import { home } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
+import { reports } from '@/routes';
 import { index as transactionsIndex } from '@/routes/transactions';
 import type { NavigationSection, SidebarPage } from '@/types/navigation';
 import { index as categoriesIndex } from '@/routes/categories';
@@ -117,7 +118,8 @@ export function getSidebarSections(
             items: [
                 {
                     label: 'Reports',
-                    dimmed: true,
+                    href: reports.url(),
+                    active: currentPage === 'reports',
                     icon: (
                         <svg
                             viewBox="0 0 24 24"
