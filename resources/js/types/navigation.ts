@@ -9,6 +9,7 @@ export type SidebarPage =
 
 export type NavigationItem = {
     label: string;
+    breadcrumbLabel?: string;
     href?: string;
     icon: ReactElement;
     active?: boolean;

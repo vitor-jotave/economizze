@@ -1,5 +1,9 @@
-import { motion } from 'motion/react';
+import { useRemember } from '@inertiajs/react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { ReactElement } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { getSidebarBreadcrumb } from '@/lib/sidebar';
+import type { SidebarPage } from '@/types/navigation';
 
 function AppIcon({
     children,
@@ -28,74 +32,114 @@ function AppIcon({
     );
 }
 
+type Breadcrumb = {
+    section: string;
+    page: string;
+};
+
 export default function Topbar({
     isNotificationsOpen,
     onToggleNotifications,
-    title,
+    currentPage,
 }: {
     isNotificationsOpen: boolean;
     onToggleNotifications: () => void;
-    title: string;
+    currentPage: SidebarPage;
 }): ReactElement {
+    const currentBreadcrumb = getSidebarBreadcrumb(currentPage);
+    const [rememberedBreadcrumb, setRememberedBreadcrumb] =
+        useRemember<Breadcrumb>(
+            currentBreadcrumb,
+            'topbar.previous-breadcrumb',
+        );
+    const shouldDelaySwitch = useMemo(
+        () =>
+            rememberedBreadcrumb.section !== currentBreadcrumb.section ||
+            rememberedBreadcrumb.page !== currentBreadcrumb.page,
+        [currentBreadcrumb, rememberedBreadcrumb],
+    );
+    const [displayedBreadcrumb, setDisplayedBreadcrumb] =
+        useState<Breadcrumb>(rememberedBreadcrumb);
+    const [shouldAnimate, setShouldAnimate] = useState(false);
+
+    useEffect(() => {
+        if (!shouldDelaySwitch) {
+            return;
+        }
+
+        const timeout = window.setTimeout(() => {
+            setShouldAnimate(true);
+            setDisplayedBreadcrumb(currentBreadcrumb);
+            setRememberedBreadcrumb(currentBreadcrumb);
+        }, 500);
+
+        return () => window.clearTimeout(timeout);
+    }, [
+        currentBreadcrumb,
+        rememberedBreadcrumb,
+        setRememberedBreadcrumb,
+        shouldDelaySwitch,
+    ]);
+
     return (
-        <header className="fixed top-0 right-0 left-0 z-20 border-b border-[#171C24] bg-[rgba(5,8,12,0.9)] backdrop-blur-xl xl:left-[280px]">
-            <div className="flex flex-col gap-5 px-7 py-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-4 text-[#818793]">
-                    <AppIcon>
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path d="m12 3 8 4.5-8 4.5L4 7.5 12 3Z" />
-                            <path d="m4 12 8 4.5 8-4.5" />
-                            <path d="m4 16.5 8 4.5 8-4.5" />
-                        </svg>
-                    </AppIcon>
-                    <AppIcon>
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path d="m12 3 2.8 5.7L21 9.6l-4.5 4.4 1 6.2L12 17.2l-5.5 3 1-6.2L3 9.6l6.2-.9L12 3Z" />
-                        </svg>
-                    </AppIcon>
-                    <div className="flex items-center gap-3 text-[18px]">
-                        <span className="text-[#4E5662]">Finance</span>
-                        <span className="text-[#5C636E]">/</span>
-                        <span className="font-medium text-white">{title}</span>
+        <header className="fixed top-0 right-0 left-0 z-20 border-b border-[#171C24] bg-[rgba(5,8,12,0.9)] backdrop-blur-xl xl:left-70">
+            <div className="relative flex flex-col gap-5 px-7 py-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-4 text-[#818793] lg:min-w-0">
+                    <div className="relative h-7 min-w-60 overflow-hidden">
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                                key={`${displayedBreadcrumb.section}-${displayedBreadcrumb.page}`}
+                                initial={
+                                    shouldAnimate
+                                        ? { opacity: 0, y: 14 }
+                                        : false
+                                }
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -14 }}
+                                transition={{ duration: 0.24, ease: 'easeOut' }}
+                                onAnimationComplete={() => {
+                                    if (shouldAnimate) {
+                                        setShouldAnimate(false);
+                                    }
+                                }}
+                                className="absolute inset-0 flex items-center gap-3 text-[18px]"
+                            >
+                                <span className="text-[#4E5662]">
+                                    {displayedBreadcrumb.section}
+                                </span>
+                                <span className="text-[#5C636E]">/</span>
+                                <span className="font-medium text-white">
+                                    {displayedBreadcrumb.page}
+                                </span>
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <AppIcon>
+                <div className="flex justify-center lg:absolute lg:top-1/2 lg:left-1/2 lg:w-full lg:max-w-[520px] lg:-translate-x-1/2 lg:-translate-y-1/2">
+                    <div className="relative w-full max-w-[520px]">
                         <svg
                             viewBox="0 0 24 24"
-                            className="h-4 w-4"
+                            className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#727986]"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="1.8"
                         >
-                            <path d="M19 15.5A8 8 0 1 1 8.5 5a6 6 0 0 0 10.5 10.5Z" />
+                            <circle cx="11" cy="11" r="6" />
+                            <path d="m20 20-3.5-3.5" />
                         </svg>
-                    </AppIcon>
-                    <AppIcon>
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path d="M3 12a9 9 0 1 0 3-6.7" />
-                            <path d="M3 4v4h4" />
-                        </svg>
-                    </AppIcon>
+                        <input
+                            readOnly
+                            value="Search..."
+                            className="h-12 w-full rounded-2xl border border-[#181D25] bg-[#13171E] pr-16 pl-11 text-[15px] text-[#727986] outline-none"
+                        />
+                        <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full border border-[#232832] px-2.5 py-1 text-[12px] font-medium text-[#A4ABB7]">
+                            ⌘ K
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3 lg:ml-auto">
                     <AppIcon
                         onClick={onToggleNotifications}
                         active={isNotificationsOpen}
@@ -109,19 +153,6 @@ export default function Topbar({
                         >
                             <path d="M12 4a4 4 0 0 1 4 4c0 4 2 5 2 5H6s2-1 2-5a4 4 0 0 1 4-4Z" />
                             <path d="M10 18a2 2 0 0 0 4 0" />
-                        </svg>
-                    </AppIcon>
-                    <AppIcon>
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <circle cx="12" cy="12" r="8.5" />
-                            <path d="M3.5 12h17" />
-                            <path d="M12 3.5a14.6 14.6 0 0 1 3 8.5 14.6 14.6 0 0 1-3 8.5 14.6 14.6 0 0 1-3-8.5 14.6 14.6 0 0 1 3-8.5Z" />
                         </svg>
                     </AppIcon>
                 </div>

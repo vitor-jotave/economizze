@@ -20,28 +20,7 @@ export default function Sidebar({
                 />
             </div>
 
-            <div className="relative mt-8">
-                <svg
-                    viewBox="0 0 24 24"
-                    className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#727986]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                >
-                    <circle cx="11" cy="11" r="6" />
-                    <path d="m20 20-3.5-3.5" />
-                </svg>
-                <input
-                    readOnly
-                    value="Search..."
-                    className="h-12 w-full rounded-2xl border border-[#181D25] bg-[#13171E] pr-16 pl-11 text-[15px] text-[#727986] outline-none"
-                />
-                <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full border border-[#232832] px-2.5 py-1 text-[12px] font-medium text-[#A4ABB7]">
-                    ⌘ K
-                </span>
-            </div>
-
-            <div className="mt-8 flex-1 space-y-9">
+            <div className="mt-10 flex-1 space-y-9">
                 {sections.map((section) => (
                     <SidebarGroup
                         key={section.title}

@@ -75,7 +75,7 @@ export default function Layout({
                 <div className="min-h-screen xl:pl-[280px]">
                     <Sidebar currentPage={currentPage} />
                     <Topbar
-                        title={title}
+                        currentPage={currentPage}
                         isNotificationsOpen={isNotificationsOpen}
                         onToggleNotifications={() =>
                             setIsNotificationsOpen((current) => !current)

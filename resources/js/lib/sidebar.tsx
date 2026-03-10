@@ -94,6 +94,7 @@ export function getSidebarSections(
             items: [
                 {
                     label: 'Reports',
+                    breadcrumbLabel: 'Despesas',
                     href: reports.url(),
                     active: currentPage === 'reports',
                     icon: (
@@ -117,4 +118,27 @@ export function getSidebarSections(
             ],
         },
     ];
+}
+
+export function getSidebarBreadcrumb(currentPage: SidebarPage): {
+    section: string;
+    page: string;
+} {
+    const sections = getSidebarSections(currentPage);
+
+    for (const section of sections) {
+        const activeItem = section.items.find((item) => item.active);
+
+        if (activeItem) {
+            return {
+                section: section.title,
+                page: activeItem.breadcrumbLabel ?? activeItem.label,
+            };
+        }
+    }
+
+    return {
+        section: 'Finanças',
+        page: 'Dashboard',
+    };
 }
