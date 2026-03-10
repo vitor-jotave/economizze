@@ -1,6 +1,7 @@
 import { home } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
 import type { NavigationSection, SidebarPage } from '@/types/navigation';
+import { index as categoriesIndex } from '@/routes/categories';
 
 export function getSidebarSections(
     currentPage: SidebarPage,
@@ -90,7 +91,8 @@ export function getSidebarSections(
                 },
                 {
                     label: 'Categories',
-                    dimmed: true,
+                    href: categoriesIndex.url(),
+                    active: currentPage === 'categories',
                     icon: (
                         <svg
                             viewBox="0 0 24 24"

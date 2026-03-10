@@ -17,7 +17,7 @@ export default function Layout({
     title,
 }: {
     children: ReactNode;
-    currentPage: 'dashboard' | 'accounts';
+    currentPage: 'dashboard' | 'accounts' | 'categories';
     title: string;
 }): ReactElement {
     const { flash, notificationCenter } = usePage<{
