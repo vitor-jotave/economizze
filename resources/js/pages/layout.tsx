@@ -81,7 +81,7 @@ export default function Layout({
                             setIsNotificationsOpen((current) => !current)
                         }
                     />
-                    <div className="min-h-screen px-7 py-[132px]">
+                    <div className="min-h-screen px-8 py-[115px]">
                         {children}
                     </div>
                 </div>

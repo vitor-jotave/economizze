@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { ReactElement } from 'react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import {
@@ -30,6 +31,7 @@ export default function Accounts(): ReactElement {
     const [search, setSearch] = useState('');
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [isComposerOpen, setIsComposerOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
     const deferredSearch = useDeferredValue(search);
 
     const form = useForm<AccountFormData>(defaultForm);
@@ -96,15 +98,23 @@ export default function Accounts(): ReactElement {
     }
 
     function removeAccount(account: Account): void {
-        const action = destroyAccount(account.id);
+        if (pendingDeleteId !== account.id) {
+            setPendingDeleteId(account.id);
 
-        if (!window.confirm(`Remover a conta "${account.name}"?`)) {
+            window.setTimeout(() => {
+                setPendingDeleteId((current) =>
+                    current === account.id ? null : current,
+                );
+            }, 3200);
+
             return;
         }
 
-        form.submit(action, {
+        form.submit(destroyAccount(account.id), {
             preserveScroll: true,
             onSuccess: () => {
+                setPendingDeleteId(null);
+
                 if (editingAccount?.id === account.id) {
                     resetForm(true);
                 }
@@ -115,7 +125,12 @@ export default function Accounts(): ReactElement {
     return (
         <Layout currentPage="accounts" title="Accounts">
             <div className="space-y-6">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.28 }}
+                    className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
+                >
                     <div>
                         <h1 className="font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
                             Contas
@@ -134,17 +149,30 @@ export default function Accounts(): ReactElement {
                     >
                         Nova Conta
                     </AppButton>
-                </div>
+                </motion.div>
 
-                <section className="overflow-hidden rounded-[26px] border border-[#1B212C] bg-[#0C1016]">
-                    <div className="flex flex-col gap-4 border-b border-[#171C24] px-6 py-5 md:flex-row md:items-center md:justify-between">
+                <motion.section
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.32, delay: 0.06 }}
+                    className="overflow-hidden rounded-[26px] border border-[#1B212C] bg-[#0C1016]"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.24, delay: 0.12 }}
+                        className="flex flex-col gap-4 border-b border-[#171C24] px-6 py-5 md:flex-row md:items-center md:justify-between"
+                    >
                         <div>
                             <p className="mt-1 text-[14px] text-[#6E7683]">
                                 {filteredAccounts.length} conta(s) listada(s)
                             </p>
                         </div>
 
-                        <div className="relative w-full md:max-w-[280px]">
+                        <motion.div
+                            layout
+                            className="relative w-full md:max-w-[280px]"
+                        >
                             <svg
                                 viewBox="0 0 24 24"
                                 className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#727986]"
@@ -163,83 +191,140 @@ export default function Accounts(): ReactElement {
                                 placeholder="Pesquisar..."
                                 className="h-12 w-full rounded-2xl border border-[#181D25] bg-[#13171E] pr-4 pl-11 text-[15px] text-white outline-none placeholder:text-[#727986]"
                             />
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
-                    <div className="grid grid-cols-[minmax(0,1.2fr)_150px_150px_130px] border-b border-[#171C24] px-6 py-4 text-[13px] tracking-[0.12em] text-[#7F8794] uppercase">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.22, delay: 0.16 }}
+                        className="grid grid-cols-[minmax(0,1.2fr)_150px_150px_130px] border-b border-[#171C24] px-6 py-4 text-[13px] tracking-[0.12em] text-[#7F8794] uppercase"
+                    >
                         <div>Conta</div>
                         <div>Tipo</div>
                         <div>Saldo</div>
                         <div className="text-right">Ações</div>
-                    </div>
+                    </motion.div>
 
                     <div className="divide-y divide-[#171C24]">
-                        {filteredAccounts.length === 0 ? (
-                            <div className="px-6 py-12 text-center text-[15px] text-[#7F8794]">
-                                Nenhuma conta encontrada com esse filtro.
-                            </div>
-                        ) : (
-                            filteredAccounts.map((account) => (
-                                <div
-                                    key={account.id}
-                                    className="grid grid-cols-[minmax(0,1.2fr)_150px_150px_130px] items-center px-6 py-5"
+                        <AnimatePresence mode="wait">
+                            {filteredAccounts.length === 0 ? (
+                                <motion.div
+                                    key="empty-state"
+                                    initial={{ opacity: 0, y: 18 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -12 }}
+                                    transition={{ duration: 0.22 }}
+                                    className="px-6 py-12 text-center text-[15px] text-[#7F8794]"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <span
-                                            className="h-11 w-11 rounded-full"
-                                            style={{
-                                                backgroundColor: account.color,
+                                    Nenhuma conta encontrada com esse filtro.
+                                </motion.div>
+                            ) : (
+                                filteredAccounts.map((account, index) => {
+                                    const isPendingDelete =
+                                        pendingDeleteId === account.id;
+
+                                    return (
+                                        <motion.div
+                                            key={account.id}
+                                            initial={{ opacity: 0, y: 18 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            transition={{
+                                                duration: 0.24,
+                                                delay: 0.18 + index * 0.04,
                                             }}
-                                        />
-                                        <div>
-                                            <p className="text-[18px] font-medium text-white">
-                                                {account.name}
-                                            </p>
-                                            <p className="text-[14px] text-[#7D848F]">
-                                                {account.institution ??
-                                                    'Sem instituicao'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="text-[15px] text-[#D7DCE4]">
-                                        {account.type_label}
-                                    </div>
-                                    <div>
-                                        <p className="text-[16px] font-medium text-white">
-                                            {formatBrazilianCurrency(
-                                                account.current_balance,
-                                            )}
-                                        </p>
-                                        <p className="text-[13px] text-[#6E7683]">
-                                            Inicial:{' '}
-                                            {formatBrazilianCurrency(
-                                                account.initial_balance,
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => fillForEdit(account)}
-                                            className="rounded-full border border-[#23303D] px-3 py-2 text-[13px] text-[#D7DCE4]"
+                                            whileHover={{
+                                                backgroundColor:
+                                                    'rgba(18, 24, 32, 0.72)',
+                                            }}
+                                            className="grid grid-cols-[minmax(0,1.2fr)_150px_150px_130px] items-center px-6 py-5 transition-colors duration-200"
                                         >
-                                            Editar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                removeAccount(account)
-                                            }
-                                            className="rounded-full border border-[#3D2323] px-3 py-2 text-[13px] text-[#FFB6B6]"
-                                        >
-                                            Excluir
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                                            <div className="flex items-center gap-4">
+                                                <motion.span
+                                                    initial={{
+                                                        scale: 0.88,
+                                                        opacity: 0,
+                                                    }}
+                                                    animate={{
+                                                        scale: 1,
+                                                        opacity: 1,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.22,
+                                                        delay:
+                                                            0.22 + index * 0.04,
+                                                    }}
+                                                    className="h-11 w-11 rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            account.color,
+                                                    }}
+                                                />
+                                                <div>
+                                                    <p className="text-[18px] font-medium text-white">
+                                                        {account.name}
+                                                    </p>
+                                                    <p className="text-[14px] text-[#7D848F]">
+                                                        {account.institution ??
+                                                            'Sem instituicao'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-[15px] text-[#D7DCE4]">
+                                                {account.type_label}
+                                            </div>
+                                            <div>
+                                                <p className="text-[16px] font-medium text-white">
+                                                    {formatBrazilianCurrency(
+                                                        account.current_balance,
+                                                    )}
+                                                </p>
+                                                <p className="text-[13px] text-[#6E7683]">
+                                                    Inicial:{' '}
+                                                    {formatBrazilianCurrency(
+                                                        account.initial_balance,
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <motion.button
+                                                    type="button"
+                                                    whileHover={{ y: -1 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    onClick={() =>
+                                                        fillForEdit(account)
+                                                    }
+                                                    className="rounded-full border border-[#23303D] px-3 py-2 text-[13px] text-[#D7DCE4] transition-colors duration-200 hover:border-[#34475A] hover:bg-[#121821]"
+                                                >
+                                                    Editar
+                                                </motion.button>
+                                                <motion.button
+                                                    type="button"
+                                                    whileHover={{ y: -1 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    onClick={() =>
+                                                        removeAccount(account)
+                                                    }
+                                                    className={[
+                                                        'rounded-full border px-3 py-2 text-[13px] transition-colors duration-200',
+                                                        isPendingDelete
+                                                            ? 'border-[#B5F955] bg-[#B5F955] text-[#11150C]'
+                                                            : 'border-[#3D2323] text-[#FFB6B6] hover:border-[#5A3030] hover:bg-[#1A1010]',
+                                                    ].join(' ')}
+                                                >
+                                                    {isPendingDelete
+                                                        ? 'Confirmar'
+                                                        : 'Excluir'}
+                                                </motion.button>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })
+                            )}
+                        </AnimatePresence>
                     </div>
-                </section>
+                </motion.section>
             </div>
 
             <AccountComposerModal

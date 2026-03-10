@@ -197,7 +197,7 @@ export default function AccountComposerModal({
                                                 <p className="mt-2 text-[15px] text-[#F7DEDE]">
                                                     Deseja sair do cadastro
                                                     desta conta? Os dados atuais
-                                                    serao descartados.
+                                                    serão descartados.
                                                 </p>
                                             </div>
 

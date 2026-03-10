@@ -1,3 +1,4 @@
+import { DollarSign, Tags } from 'lucide-react';
 import { home } from '@/routes';
 import { index as accountsIndex } from '@/routes/accounts';
 import { reports } from '@/routes';
@@ -78,43 +79,18 @@ export function getSidebarSections(
                     label: 'Transações',
                     href: transactionsIndex.url(),
                     active: currentPage === 'transactions',
-                    icon: (
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path d="M7 7h10" />
-                            <path d="M7 12h6" />
-                            <path d="M7 17h10" />
-                        </svg>
-                    ),
+                    icon: <DollarSign className="h-4 w-4" strokeWidth={1.8} />,
                 },
                 {
                     label: 'Categorias',
                     href: categoriesIndex.url(),
                     active: currentPage === 'categories',
-                    icon: (
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path d="M4 7h7" />
-                            <path d="M13 7h7" />
-                            <path d="M4 17h7" />
-                            <path d="M13 17h7" />
-                        </svg>
-                    ),
+                    icon: <Tags className="h-4 w-4" strokeWidth={1.8} />,
                 },
             ],
         },
         {
-            title: 'Workspace',
+            title: 'Análises',
             items: [
                 {
                     label: 'Reports',
@@ -135,22 +111,6 @@ export function getSidebarSections(
                                 rx="1.5"
                             />
                             <rect x="17" y="4" width="3" height="16" rx="1.5" />
-                        </svg>
-                    ),
-                },
-                {
-                    label: 'Settings',
-                    dimmed: true,
-                    icon: (
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z" />
-                            <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a2 2 0 1 1-4 0v-.2a1 1 0 0 0-.7-1 1 1 0 0 0-1.1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a2 2 0 1 1 0-4h.2a1 1 0 0 0 1-.7 1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a2 2 0 1 1 4 0v.2a1 1 0 0 0 .7 1 1 1 0 0 0 1.1-.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H20a2 2 0 1 1 0 4h-.2a1 1 0 0 0-1 .7Z" />
                         </svg>
                     ),
                 },

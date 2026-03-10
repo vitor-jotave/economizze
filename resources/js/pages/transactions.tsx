@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
@@ -138,12 +139,17 @@ export default function Transactions(): ReactElement {
     return (
         <Layout currentPage="transactions" title="Transactions">
             <div className="space-y-6">
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.28 }}
+                    className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
+                >
                     <div>
-                        <h1 className="font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
-                            Transacoes
+                        <h1 className="font-mono text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
+                            Transações
                         </h1>
-                        <p className="mt-3 max-w-[620px] text-[16px] leading-6 text-[#8B93A0]">
+                        <p className="mt-3 max-w-155 text-[16px] leading-6 text-[#8B93A0]">
                             Registre entradas e saidas com contexto completo
                             para atualizar automaticamente os saldos das suas
                             contas.
@@ -156,28 +162,43 @@ export default function Transactions(): ReactElement {
                         variant="lime"
                         className="px-5 text-[14px]"
                     >
-                        Nova Transacao
+                        Nova Transação
                     </AppButton>
-                </div>
+                </motion.div>
 
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <article className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6">
+                    <motion.article
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.26, delay: 0.04 }}
+                        className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
+                    >
                         <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
                             Entradas
                         </p>
                         <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-white">
                             {formatBrazilianCurrency(summary.income)}
                         </p>
-                    </article>
-                    <article className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6">
+                    </motion.article>
+                    <motion.article
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.26, delay: 0.08 }}
+                        className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
+                    >
                         <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
                             Saidas
                         </p>
                         <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-white">
                             {formatBrazilianCurrency(summary.expense)}
                         </p>
-                    </article>
-                    <article className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6">
+                    </motion.article>
+                    <motion.article
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.26, delay: 0.12 }}
+                        className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
+                    >
                         <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
                             Resultado
                         </p>
@@ -187,17 +208,29 @@ export default function Transactions(): ReactElement {
                             )}
                         </p>
                         <p className="mt-2 text-[14px] text-[#6E7683]">
-                            {summary.count} transacao(oes)
+                            {summary.count} transações
                         </p>
-                    </article>
+                    </motion.article>
                 </div>
 
-                <section className="overflow-hidden rounded-[26px] border border-[#1B212C] bg-[#0C1016]">
-                    <div className="flex flex-col gap-4 border-b border-[#171C24] px-6 py-5">
+                <motion.section
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.32, delay: 0.14 }}
+                    className="overflow-hidden rounded-[26px] border border-[#1B212C] bg-[#0C1016]"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.24, delay: 0.18 }}
+                        className="flex flex-col gap-4 border-b border-[#171C24] px-6 py-5"
+                    >
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
-                                <button
+                                <motion.button
                                     type="button"
+                                    whileHover={{ y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={() => setActiveTypeFilter('all')}
                                     className={[
                                         'rounded-full border px-4 py-2 text-[13px] transition',
@@ -207,11 +240,13 @@ export default function Transactions(): ReactElement {
                                     ].join(' ')}
                                 >
                                     Tudo
-                                </button>
+                                </motion.button>
                                 {transactionTypes.map((type) => (
-                                    <button
+                                    <motion.button
                                         key={type.value}
                                         type="button"
+                                        whileHover={{ y: -1 }}
+                                        whileTap={{ scale: 0.98 }}
                                         onClick={() =>
                                             setActiveTypeFilter(type.value)
                                         }
@@ -223,11 +258,14 @@ export default function Transactions(): ReactElement {
                                         ].join(' ')}
                                     >
                                         {type.label}
-                                    </button>
+                                    </motion.button>
                                 ))}
                             </div>
 
-                            <div className="relative w-full lg:max-w-[280px]">
+                            <motion.div
+                                layout
+                                className="relative w-full lg:max-w-[280px]"
+                            >
                                 <svg
                                     viewBox="0 0 24 24"
                                     className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-[#727986]"
@@ -246,108 +284,171 @@ export default function Transactions(): ReactElement {
                                     placeholder="Pesquisar..."
                                     className="h-12 w-full rounded-2xl border border-[#181D25] bg-[#13171E] pr-4 pl-11 text-[15px] text-white outline-none placeholder:text-[#727986]"
                                 />
-                            </div>
+                            </motion.div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     <div className="divide-y divide-[#171C24]">
-                        {filteredTransactions.length === 0 ? (
-                            <div className="px-6 py-12 text-center text-[15px] text-[#7F8794]">
-                                Nenhuma transacao encontrada com esse filtro.
-                            </div>
-                        ) : (
-                            filteredTransactions.map((transaction) => {
-                                const isPendingDelete =
-                                    pendingDeleteId === transaction.id;
+                        <AnimatePresence mode="wait">
+                            {filteredTransactions.length === 0 ? (
+                                <motion.div
+                                    key="empty-state"
+                                    initial={{ opacity: 0, y: 18 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -12 }}
+                                    transition={{ duration: 0.22 }}
+                                    className="px-6 py-12 text-center text-[15px] text-[#7F8794]"
+                                >
+                                    Nenhuma transacao encontrada com esse
+                                    filtro.
+                                </motion.div>
+                            ) : (
+                                filteredTransactions.map(
+                                    (transaction, index) => {
+                                        const isPendingDelete =
+                                            pendingDeleteId === transaction.id;
 
-                                return (
-                                    <article
-                                        key={transaction.id}
-                                        className="flex flex-col gap-5 px-6 py-5 xl:flex-row xl:items-center xl:justify-between"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <span
-                                                className="flex h-14 w-14 items-center justify-center rounded-[20px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
-                                                style={{
-                                                    backgroundColor:
-                                                        transaction.category
-                                                            .color ?? '#B5F955',
+                                        return (
+                                            <motion.article
+                                                key={transaction.id}
+                                                initial={{ opacity: 0, y: 18 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                transition={{
+                                                    duration: 0.24,
+                                                    delay: 0.22 + index * 0.04,
                                                 }}
+                                                whileHover={{
+                                                    backgroundColor:
+                                                        'rgba(18, 24, 32, 0.72)',
+                                                }}
+                                                className="flex flex-col gap-5 px-6 py-5 transition-colors duration-200 xl:flex-row xl:items-center xl:justify-between"
                                             >
-                                                <CategoryIconGlyph
-                                                    icon={
-                                                        transaction.category
-                                                            .icon ?? 'receipt'
-                                                    }
-                                                    className="h-6 w-6"
-                                                />
-                                            </span>
-                                            <div>
-                                                <div className="flex flex-wrap items-center gap-3">
-                                                    <p className="text-[20px] font-medium text-white">
-                                                        {
-                                                            transaction.category
-                                                                .name
-                                                        }
-                                                    </p>
-                                                    <span className="rounded-full border border-[#232A35] px-3 py-1 text-[12px] tracking-[0.12em] text-[#A4ACB8] uppercase">
-                                                        {transaction.type_label}
-                                                    </span>
+                                                <div className="flex items-center gap-4">
+                                                    <motion.span
+                                                        initial={{
+                                                            scale: 0.88,
+                                                            opacity: 0,
+                                                        }}
+                                                        animate={{
+                                                            scale: 1,
+                                                            opacity: 1,
+                                                        }}
+                                                        transition={{
+                                                            duration: 0.22,
+                                                            delay:
+                                                                0.26 +
+                                                                index * 0.04,
+                                                        }}
+                                                        className="flex h-14 w-14 items-center justify-center rounded-[20px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                                                        style={{
+                                                            backgroundColor:
+                                                                transaction
+                                                                    .category
+                                                                    .color ??
+                                                                '#B5F955',
+                                                        }}
+                                                    >
+                                                        <CategoryIconGlyph
+                                                            icon={
+                                                                transaction
+                                                                    .category
+                                                                    .icon ??
+                                                                'receipt'
+                                                            }
+                                                            className="h-6 w-6"
+                                                        />
+                                                    </motion.span>
+                                                    <div>
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            <p className="text-[20px] font-medium text-white">
+                                                                {
+                                                                    transaction
+                                                                        .category
+                                                                        .name
+                                                                }
+                                                            </p>
+                                                            <span className="rounded-full border border-[#232A35] px-3 py-1 text-[12px] tracking-[0.12em] text-[#A4ACB8] uppercase">
+                                                                {
+                                                                    transaction.type_label
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <p className="mt-1 text-[14px] text-[#7D848F]">
+                                                            {
+                                                                transaction
+                                                                    .account
+                                                                    .name
+                                                            }{' '}
+                                                            •{' '}
+                                                            {
+                                                                transaction.transacted_at_label
+                                                            }
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <p className="mt-1 text-[14px] text-[#7D848F]">
-                                                    {transaction.account.name} •{' '}
-                                                    {
-                                                        transaction.transacted_at_label
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
 
-                                        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-8">
-                                            <div className="text-left xl:text-right">
-                                                <p className="text-[18px] font-medium text-white">
-                                                    {formatBrazilianCurrency(
-                                                        transaction.amount,
-                                                    )}
-                                                </p>
-                                            </div>
+                                                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-8">
+                                                    <div className="text-left xl:text-right">
+                                                        <p className="text-[18px] font-medium text-white">
+                                                            {formatBrazilianCurrency(
+                                                                transaction.amount,
+                                                            )}
+                                                        </p>
+                                                    </div>
 
-                                            <div className="flex items-center gap-2 xl:justify-end">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        fillForEdit(transaction)
-                                                    }
-                                                    className="rounded-full border border-[#23303D] px-3 py-2 text-[13px] text-[#D7DCE4] transition hover:border-[#38495D]"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        removeTransaction(
-                                                            transaction,
-                                                        )
-                                                    }
-                                                    className={[
-                                                        'rounded-full border px-3 py-2 text-[13px] transition',
-                                                        isPendingDelete
-                                                            ? 'border-[#B5F955] bg-[#B5F955] text-[#11150C]'
-                                                            : 'border-[#3D2323] text-[#FFB6B6] hover:border-[#6A3434]',
-                                                    ].join(' ')}
-                                                >
-                                                    {isPendingDelete
-                                                        ? 'Confirmar'
-                                                        : 'Excluir'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })
-                        )}
+                                                    <div className="flex items-center gap-2 xl:justify-end">
+                                                        <motion.button
+                                                            type="button"
+                                                            whileHover={{
+                                                                y: -1,
+                                                            }}
+                                                            whileTap={{
+                                                                scale: 0.98,
+                                                            }}
+                                                            onClick={() =>
+                                                                fillForEdit(
+                                                                    transaction,
+                                                                )
+                                                            }
+                                                            className="rounded-full border border-[#23303D] px-3 py-2 text-[13px] text-[#D7DCE4] transition hover:border-[#38495D]"
+                                                        >
+                                                            Editar
+                                                        </motion.button>
+                                                        <motion.button
+                                                            type="button"
+                                                            whileHover={{
+                                                                y: -1,
+                                                            }}
+                                                            whileTap={{
+                                                                scale: 0.98,
+                                                            }}
+                                                            onClick={() =>
+                                                                removeTransaction(
+                                                                    transaction,
+                                                                )
+                                                            }
+                                                            className={[
+                                                                'rounded-full border px-3 py-2 text-[13px] transition',
+                                                                isPendingDelete
+                                                                    ? 'border-[#B5F955] bg-[#B5F955] text-[#11150C]'
+                                                                    : 'border-[#3D2323] text-[#FFB6B6] hover:border-[#6A3434]',
+                                                            ].join(' ')}
+                                                        >
+                                                            {isPendingDelete
+                                                                ? 'Confirmar'
+                                                                : 'Excluir'}
+                                                        </motion.button>
+                                                    </div>
+                                                </div>
+                                            </motion.article>
+                                        );
+                                    },
+                                )
+                            )}
+                        </AnimatePresence>
                     </div>
-                </section>
+                </motion.section>
             </div>
 
             <TransactionComposerModal
