@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Account;
 use App\Models\Activity;
 use App\Models\Category;
+use App\Models\SystemNotification;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -52,6 +53,17 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn (): ?array => $request->session()->get('success'),
             ],
             'notificationCenter' => [
+                'notifications' => fn (): array => SystemNotification::query()
+                    ->recent()
+                    ->get()
+                    ->map(fn (SystemNotification $notification): array => [
+                        'id' => (string) $notification->id,
+                        'title' => $notification->title,
+                        'body' => $notification->body,
+                        'time' => $notification->created_at?->diffForHumans() ?? 'Agora mesmo',
+                        'tone' => $notification->tone,
+                    ])
+                    ->all(),
                 'activities' => fn (): array => Activity::query()
                     ->recent()
                     ->get()

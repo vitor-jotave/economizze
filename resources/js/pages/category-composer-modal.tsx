@@ -39,6 +39,7 @@ export default function CategoryComposerModal({
     const [isExitPromptOpen, setIsExitPromptOpen] = useState(false);
     const previewColor = normalizeHexColor(data.color);
     const previewColorRgb = hexToRgb(previewColor);
+    const allowsBudget = data.type !== 'income';
     const selectedTypeLabel = useMemo(
         () =>
             categoryTypes.find((type) => type.value === data.type)?.label ??
@@ -164,7 +165,8 @@ export default function CategoryComposerModal({
                                             <p className="mt-3 max-w-70 text-[15px] leading-6 text-[#A4ACB8]">
                                                 Defina o tipo, a cor e o icone
                                                 para identificar essa categoria
-                                                com clareza.
+                                                com clareza e, se quiser,
+                                                controlar um teto mensal.
                                             </p>
                                         </div>
 
@@ -199,10 +201,10 @@ export default function CategoryComposerModal({
                                                                     'Nome da categoria'}
                                                             </p>
                                                             <p className="mt-2 pr-10 text-[14px] text-white/70">
-                                                                Organize suas
-                                                                movimentacoes
-                                                                com contexto
-                                                                visual.
+                                                                {allowsBudget &&
+                                                                data.monthly_budget_limit
+                                                                    ? `Limite mensal de R$ ${data.monthly_budget_limit.replace('.', ',')}`
+                                                                    : 'Organize suas movimentacoes com contexto visual.'}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -273,6 +275,55 @@ export default function CategoryComposerModal({
                                             {errors.type ? (
                                                 <p className="mt-2 text-[13px] text-[#FFB6B6]">
                                                     {errors.type}
+                                                </p>
+                                            ) : null}
+                                        </div>
+
+                                        <div>
+                                            <label className="mb-3 block text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
+                                                Limite Mensal
+                                            </label>
+                                            <div className="rounded-[24px] border border-[#232A35] bg-[#141922] p-1.5">
+                                                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px]">
+                                                    <div className="flex items-center gap-3 rounded-[20px] px-3">
+                                                        <span className="text-[15px] font-medium text-[#B5F955]">
+                                                            R$
+                                                        </span>
+                                                        <input
+                                                            value={
+                                                                data.monthly_budget_limit
+                                                            }
+                                                            onChange={(event) =>
+                                                                setField(
+                                                                    'monthly_budget_limit',
+                                                                    event.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            inputMode="decimal"
+                                                            placeholder={
+                                                                allowsBudget
+                                                                    ? '0,00'
+                                                                    : 'Nao aplicavel'
+                                                            }
+                                                            disabled={
+                                                                !allowsBudget
+                                                            }
+                                                            className="h-[48px] w-full bg-transparent text-[15px] text-white outline-none placeholder:text-[#69717E] disabled:cursor-not-allowed disabled:text-[#5E6673]"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center justify-center rounded-[20px] border border-[#1F2631] bg-[#10151C] px-4 text-center text-[13px] leading-5 text-[#8C95A2]">
+                                                        {allowsBudget
+                                                            ? 'Dispara alerta ao chegar perto do teto mensal.'
+                                                            : 'Categorias de receita nao usam limite mensal.'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {errors.monthly_budget_limit ? (
+                                                <p className="mt-2 text-[13px] text-[#FFB6B6]">
+                                                    {
+                                                        errors.monthly_budget_limit
+                                                    }
                                                 </p>
                                             ) : null}
                                         </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Activity;
 use App\Models\Category;
+use App\Services\CategoryBudgetAlertService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -12,6 +13,10 @@ use Inertia\Response;
 
 class CategoryController extends Controller
 {
+    public function __construct(
+        protected CategoryBudgetAlertService $categoryBudgetAlertService,
+    ) {}
+
     public function index(): Response
     {
         $categories = Category::query()
@@ -25,6 +30,7 @@ class CategoryController extends Controller
                 'type_label' => Category::TYPES[$category->type] ?? $category->type,
                 'color' => $category->color,
                 'icon' => $category->icon,
+                'monthly_budget_limit' => (float) ($category->monthly_budget_limit ?? 0),
                 'is_active' => $category->is_active,
                 'updated_at' => $category->updated_at?->format('d/m/Y H:i'),
             ]);
@@ -44,6 +50,8 @@ class CategoryController extends Controller
     {
         $category = Category::query()->create($this->validatedAttributes($request));
 
+        $this->categoryBudgetAlertService->evaluateForMonth($category, now());
+
         $this->logActivity(
             type: 'category_created',
             title: sprintf('Categoria "%s" criada.', $category->name),
@@ -62,6 +70,8 @@ class CategoryController extends Controller
         Category $category,
     ): RedirectResponse {
         $category->update($this->validatedAttributes($request));
+
+        $this->categoryBudgetAlertService->evaluateForMonth($category, now());
 
         $this->logActivity(
             type: 'category_updated',
@@ -100,7 +110,7 @@ class CategoryController extends Controller
      */
     protected function validatedAttributes(CategoryRequest $request): array
     {
-        /** @var array{name:string,type:string,color:string,icon:string} $validated */
+        /** @var array{name:string,type:string,color:string,icon:string,monthly_budget_limit?:numeric-string|int|float|null} $validated */
         $validated = $request->validated();
 
         return [
@@ -109,6 +119,10 @@ class CategoryController extends Controller
             'type' => $validated['type'],
             'color' => strtoupper($validated['color']),
             'icon' => $validated['icon'],
+            'monthly_budget_limit' => in_array($validated['type'], ['expense', 'both'], true)
+                && filled($validated['monthly_budget_limit'] ?? null)
+                ? (float) str_replace(',', '.', (string) $validated['monthly_budget_limit'])
+                : null,
             'is_active' => $request->route('category') instanceof Category
                 ? $request->route('category')->is_active
                 : true,

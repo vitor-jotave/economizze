@@ -43,6 +43,7 @@ class CategoryFactory extends Factory
                 'smartphone',
                 'heart',
             ]),
+            'monthly_budget_limit' => fake()->optional(0.4)->randomFloat(2, 150, 3000),
             'is_active' => true,
         ];
     }

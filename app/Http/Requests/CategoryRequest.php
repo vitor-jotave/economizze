@@ -8,6 +8,19 @@ use Illuminate\Validation\Rule;
 
 class CategoryRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('monthly_budget_limit')) {
+            $this->merge([
+                'monthly_budget_limit' => str_replace(
+                    ',',
+                    '.',
+                    (string) $this->input('monthly_budget_limit'),
+                ),
+            ]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -35,6 +48,11 @@ class CategoryRequest extends FormRequest
             ],
             'color' => ['required', 'string', 'regex:/^#[A-Fa-f0-9]{6}$/'],
             'icon' => ['required', 'string', 'max:50'],
+            'monthly_budget_limit' => [
+                'nullable',
+                'numeric',
+                'min:0.01',
+            ],
         ];
     }
 
@@ -50,6 +68,8 @@ class CategoryRequest extends FormRequest
             'type.in' => 'Selecione um tipo de categoria valido.',
             'color.regex' => 'A cor deve estar no formato hexadecimal.',
             'icon.required' => 'Selecione um icone para a categoria.',
+            'monthly_budget_limit.numeric' => 'O limite mensal precisa ser numerico.',
+            'monthly_budget_limit.min' => 'O limite mensal precisa ser maior que zero.',
         ];
     }
 }

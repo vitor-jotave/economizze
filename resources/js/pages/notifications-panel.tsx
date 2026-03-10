@@ -5,13 +5,6 @@ import type {
     NotificationCenterItem,
 } from '@/types/notification-center';
 
-const notifications = [
-    ['56 New users registered.', 'Just now'],
-    ['132 Orders placed.', '59 Minutes ago'],
-    ['Funds have been withdrawn.', '12 Hours ago'],
-    ['5 Unread messages.', 'Today, 11:59 PM'],
-] as const;
-
 export default function NotificationsPanel({
     isOpen,
     onClose,
@@ -23,11 +16,6 @@ export default function NotificationsPanel({
     recentNotifications: NotificationCenterItem[];
     activities: NotificationCenterActivity[];
 }): ReactElement {
-    const combinedNotifications = [
-        ...recentNotifications.map(({ title, time }) => [title, time] as const),
-        ...notifications,
-    ];
-
     return (
         <AnimatePresence>
             {isOpen ? (
@@ -82,45 +70,69 @@ export default function NotificationsPanel({
                                     </button>
                                 </div>
                                 <div className="mt-6 space-y-5">
-                                    {combinedNotifications.map(
-                                        ([title, time], index) => (
-                                            <motion.div
-                                                key={`${title}-${time}-${index}`}
-                                                className="flex gap-4"
-                                                initial={{ opacity: 0, x: 14 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0, x: 10 }}
-                                                transition={{
-                                                    delay: 0.08 + index * 0.04,
-                                                    duration: 0.22,
-                                                }}
-                                            >
-                                                <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#D8FFD0] text-[#3B9140]">
-                                                    <svg
-                                                        viewBox="0 0 24 24"
-                                                        className="h-5 w-5"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="1.8"
+                                    {recentNotifications.length === 0 ? (
+                                        <div className="rounded-[24px] border border-[#171C24] bg-[#0D1218] px-5 py-6 text-[15px] leading-7 text-[#7D848F]">
+                                            Seus alertas de sistema vao aparecer
+                                            aqui quando alguma categoria se
+                                            aproximar ou ultrapassar o limite
+                                            mensal.
+                                        </div>
+                                    ) : (
+                                        recentNotifications.map(
+                                            (
+                                                { id, title, body, time, tone },
+                                                index,
+                                            ) => (
+                                                <motion.div
+                                                    key={id}
+                                                    className="flex gap-4"
+                                                    initial={{
+                                                        opacity: 0,
+                                                        x: 14,
+                                                    }}
+                                                    animate={{
+                                                        opacity: 1,
+                                                        x: 0,
+                                                    }}
+                                                    exit={{ opacity: 0, x: 10 }}
+                                                    transition={{
+                                                        delay:
+                                                            0.08 + index * 0.04,
+                                                        duration: 0.22,
+                                                    }}
+                                                >
+                                                    <div
+                                                        className={[
+                                                            'mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br text-white',
+                                                            tone,
+                                                        ].join(' ')}
                                                     >
-                                                        <circle
-                                                            cx="12"
-                                                            cy="8"
-                                                            r="3"
-                                                        />
-                                                        <path d="M6 19a6 6 0 0 1 12 0" />
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[18px] leading-[1.2] text-white">
-                                                        {title}
-                                                    </p>
-                                                    <p className="mt-1 text-[15px] text-[#6F7682]">
-                                                        {time}
-                                                    </p>
-                                                </div>
-                                            </motion.div>
-                                        ),
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            className="h-5 w-5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.8"
+                                                        >
+                                                            <path d="M12 9v4" />
+                                                            <path d="M12 17h.01" />
+                                                            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[18px] leading-[1.2] text-white">
+                                                            {title}
+                                                        </p>
+                                                        <p className="mt-2 text-[15px] leading-6 text-[#A4ACB8]">
+                                                            {body}
+                                                        </p>
+                                                        <p className="mt-1 text-[15px] text-[#6F7682]">
+                                                            {time}
+                                                        </p>
+                                                    </div>
+                                                </motion.div>
+                                            ),
+                                        )
                                     )}
                                 </div>
                             </motion.section>

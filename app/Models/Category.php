@@ -27,6 +27,7 @@ class Category extends Model
         'type',
         'color',
         'icon',
+        'monthly_budget_limit',
         'is_active',
     ];
 
@@ -36,6 +37,7 @@ class Category extends Model
     protected function casts(): array
     {
         return [
+            'monthly_budget_limit' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }

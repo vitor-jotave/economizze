@@ -6,6 +6,7 @@ export type Category = {
     type_label: string;
     color: string;
     icon: string;
+    monthly_budget_limit: number;
     is_active: boolean;
     updated_at: string | null;
 };
@@ -31,4 +32,5 @@ export type CategoryFormData = {
     type: string;
     color: string;
     icon: string;
+    monthly_budget_limit: string;
 };

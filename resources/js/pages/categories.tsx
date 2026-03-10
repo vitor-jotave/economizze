@@ -9,6 +9,7 @@ import {
 } from '@/actions/App/Http/Controllers/CategoryController';
 import AppButton from '@/components/app-button';
 import CategoryIconGlyph from '@/components/category-icon-glyph';
+import { formatBrazilianCurrency } from '@/lib/utils';
 import { index as categoriesIndex } from '@/routes/categories';
 import type {
     CategoriesPageProps,
@@ -23,6 +24,7 @@ const defaultForm: CategoryFormData = {
     type: 'expense',
     color: '#B5F955',
     icon: 'receipt',
+    monthly_budget_limit: '',
 };
 
 export default function Categories(): ReactElement {
@@ -104,6 +106,10 @@ export default function Categories(): ReactElement {
             type: category.type,
             color: category.color,
             icon: category.icon,
+            monthly_budget_limit:
+                category.monthly_budget_limit > 0
+                    ? category.monthly_budget_limit.toFixed(2)
+                    : '',
         });
     }
 
@@ -287,6 +293,12 @@ export default function Categories(): ReactElement {
                                                             {
                                                                 category.type_label
                                                             }
+                                                        </p>
+                                                        <p className="mt-3 text-[13px] text-[#B3BAC6]">
+                                                            {category.monthly_budget_limit >
+                                                            0
+                                                                ? `Limite mensal ${formatBrazilianCurrency(category.monthly_budget_limit)}`
+                                                                : 'Sem limite mensal'}
                                                         </p>
                                                     </div>
                                                 </div>

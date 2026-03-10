@@ -38,6 +38,7 @@ export default function Layout({
             } | null;
         };
         notificationCenter?: {
+            notifications?: NotificationCenterItem[];
             activities?: NotificationCenterActivity[];
         };
         quickSearch?: {
@@ -61,7 +62,9 @@ export default function Layout({
         const notification: NotificationCenterItem = {
             id: success.id,
             title: success.message,
+            body: '',
             time: 'Agora mesmo',
+            tone: 'from-[#B5F955] to-[#6BE675]',
         };
 
         lastFlashIdRef.current = success.id;
@@ -129,7 +132,7 @@ export default function Layout({
             <NotificationsPanel
                 isOpen={isNotificationsOpen}
                 onClose={() => setIsNotificationsOpen(false)}
-                recentNotifications={recentNotifications}
+                recentNotifications={notificationCenter?.notifications ?? []}
                 activities={notificationCenter?.activities ?? []}
             />
             <QuickActionsPalette

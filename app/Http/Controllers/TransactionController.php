@@ -8,6 +8,8 @@ use App\Models\Activity;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\AccountBalanceService;
+use App\Services\CategoryBudgetAlertService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -17,6 +19,7 @@ class TransactionController extends Controller
 {
     public function __construct(
         protected AccountBalanceService $accountBalanceService,
+        protected CategoryBudgetAlertService $categoryBudgetAlertService,
     ) {}
 
     public function index(): Response
@@ -91,6 +94,12 @@ class TransactionController extends Controller
         $transaction = Transaction::query()->create($this->validatedAttributes($request));
 
         $this->accountBalanceService->refreshFromTransaction($transaction);
+        $this->evaluateBudgetAlertsForContexts([
+            [
+                'category_id' => $transaction->category_id,
+                'transacted_at' => $transaction->transacted_at?->toDateString(),
+            ],
+        ]);
 
         $this->logActivity(
             type: 'transaction_created',
@@ -110,6 +119,8 @@ class TransactionController extends Controller
         Transaction $transaction,
     ): RedirectResponse {
         $originalAccountId = $transaction->account_id;
+        $originalCategoryId = $transaction->category_id;
+        $originalTransactedAt = $transaction->transacted_at?->toDateString();
 
         $transaction->update($this->validatedAttributes($request));
 
@@ -122,6 +133,17 @@ class TransactionController extends Controller
                 $this->accountBalanceService->refresh($originalAccount);
             }
         }
+
+        $this->evaluateBudgetAlertsForContexts([
+            [
+                'category_id' => $originalCategoryId,
+                'transacted_at' => $originalTransactedAt,
+            ],
+            [
+                'category_id' => $transaction->category_id,
+                'transacted_at' => $transaction->transacted_at?->toDateString(),
+            ],
+        ]);
 
         $this->logActivity(
             type: 'transaction_updated',
@@ -140,12 +162,21 @@ class TransactionController extends Controller
     {
         $account = $transaction->account;
         $amount = (string) $transaction->amount;
+        $categoryId = $transaction->category_id;
+        $transactedAt = $transaction->transacted_at?->toDateString();
 
         $transaction->delete();
 
         if ($account instanceof Account) {
             $this->accountBalanceService->refresh($account);
         }
+
+        $this->evaluateBudgetAlertsForContexts([
+            [
+                'category_id' => $categoryId,
+                'transacted_at' => $transactedAt,
+            ],
+        ]);
 
         Activity::query()->create([
             'type' => 'transaction_deleted',
@@ -190,5 +221,26 @@ class TransactionController extends Controller
             'subject_type' => 'transaction',
             'subject_id' => $transaction->id,
         ]);
+    }
+
+    /**
+     * @param  list<array{category_id:int|null,transacted_at:string|null}>  $contexts
+     */
+    protected function evaluateBudgetAlertsForContexts(array $contexts): void
+    {
+        collect($contexts)
+            ->filter(
+                fn (array $context): bool => $context['category_id'] !== null
+                    && filled($context['transacted_at']),
+            )
+            ->unique(
+                fn (array $context): string => "{$context['category_id']}:{$context['transacted_at']}",
+            )
+            ->each(function (array $context): void {
+                $this->categoryBudgetAlertService->evaluateForMonth(
+                    $context['category_id'],
+                    Carbon::parse((string) $context['transacted_at']),
+                );
+            });
     }
 }

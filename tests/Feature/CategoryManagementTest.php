@@ -21,6 +21,7 @@ it('creates a category', function () {
         'type' => 'expense',
         'color' => '#B5F955',
         'icon' => 'receipt',
+        'monthly_budget_limit' => 1200,
     ]);
 
     $response->assertRedirect(route('categories.index'));
@@ -32,6 +33,7 @@ it('creates a category', function () {
         'type' => 'expense',
         'color' => '#B5F955',
         'icon' => 'receipt',
+        'monthly_budget_limit' => '1200.00',
         'is_active' => 1,
     ]);
 });
@@ -47,6 +49,7 @@ it('updates a category', function () {
         'type' => 'both',
         'color' => '#3BA7FF',
         'icon' => 'home',
+        'monthly_budget_limit' => 980.5,
     ]);
 
     $response->assertRedirect(route('categories.index'));
@@ -58,6 +61,7 @@ it('updates a category', function () {
         'type' => 'both',
         'color' => '#3BA7FF',
         'icon' => 'home',
+        'monthly_budget_limit' => '980.50',
         'is_active' => 1,
     ]);
 });
