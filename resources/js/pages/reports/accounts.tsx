@@ -37,6 +37,26 @@ function netTone(account: ReportAccountHealthItem): string {
     return 'text-[#98A1AD]';
 }
 
+function primaryBalanceLabel(account: ReportAccountHealthItem): string {
+    return account.type === 'credit_card' ? 'Limite disponível' : 'Saldo';
+}
+
+function primaryBalanceValue(account: ReportAccountHealthItem): number {
+    return account.type === 'credit_card'
+        ? account.available_credit
+        : account.current_balance;
+}
+
+function secondaryBalanceLabel(account: ReportAccountHealthItem): string {
+    return account.type === 'credit_card' ? 'Limite total' : 'Inicial';
+}
+
+function secondaryBalanceValue(account: ReportAccountHealthItem): number {
+    return account.type === 'credit_card'
+        ? account.credit_limit
+        : account.initial_balance;
+}
+
 export default function ReportAccounts({
     activePeriod,
     periodOptions,
@@ -114,10 +134,12 @@ export default function ReportAccounts({
                             className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
                         >
                             <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                Saldo total
+                                Caixa disponível
                             </p>
                             <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-white">
-                                {formatBrazilianCurrency(summary.totalBalance)}
+                                {formatBrazilianCurrency(
+                                    summary.totalCashBalance,
+                                )}
                             </p>
                         </motion.article>
                         <motion.article
@@ -127,10 +149,12 @@ export default function ReportAccounts({
                             className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
                         >
                             <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                Contas positivas
+                                Crédito disponível
                             </p>
                             <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-[#B6F955]">
-                                {summary.positiveAccounts}
+                                {formatBrazilianCurrency(
+                                    summary.totalAvailableCredit,
+                                )}
                             </p>
                         </motion.article>
                         <motion.article
@@ -140,10 +164,10 @@ export default function ReportAccounts({
                             className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
                         >
                             <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                Contas negativas
+                                Contas de caixa
                             </p>
-                            <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-[#F95555]">
-                                {summary.negativeAccounts}
+                            <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-white">
+                                {summary.cashAccountsCount}
                             </p>
                         </motion.article>
                         <motion.article
@@ -153,10 +177,10 @@ export default function ReportAccounts({
                             className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
                         >
                             <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                Total de contas
+                                Cartões
                             </p>
                             <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-white">
-                                {summary.accountsCount}
+                                {summary.creditAccountsCount}
                             </p>
                         </motion.article>
                     </div>
@@ -171,32 +195,30 @@ export default function ReportAccounts({
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="rounded-[24px] border border-[#171C24] bg-[#10161D] p-5">
                                     <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                        Maior saldo
+                                        Maior caixa
                                     </p>
                                     <p className="mt-3 text-[24px] font-medium tracking-[-0.04em] text-white">
-                                        {summary.topBalanceAccount?.name ??
+                                        {summary.topCashAccount?.name ??
                                             'Sem dados'}
                                     </p>
                                     <p className="mt-2 text-[15px] text-[#A4ACB8]">
-                                        {summary.topBalanceAccount
-                                            ? `${summary.topBalanceAccount.share_of_balance}% do caixa • ${formatBrazilianCurrency(summary.topBalanceAccount.current_balance)}`
+                                        {summary.topCashAccount
+                                            ? `${summary.topCashAccount.share_of_balance}% do caixa • ${formatBrazilianCurrency(summary.topCashAccount.current_balance)}`
                                             : 'Nenhuma conta encontrada'}
                                     </p>
                                 </div>
                                 <div className="rounded-[24px] border border-[#171C24] bg-[#10161D] p-5">
                                     <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                        Maior pressão
+                                        Maior uso de crédito
                                     </p>
                                     <p className="mt-3 text-[24px] font-medium tracking-[-0.04em] text-white">
-                                        {summary.worstNetAccount?.name ??
+                                        {summary.mostPressuredCard?.name ??
                                             'Sem dados'}
                                     </p>
                                     <p className="mt-2 text-[15px] text-[#A4ACB8]">
-                                        {summary.worstNetAccount
-                                            ? formatBrazilianCurrency(
-                                                  summary.worstNetAccount.net,
-                                              )
-                                            : 'Nenhuma conta encontrada'}
+                                        {summary.mostPressuredCard
+                                            ? `${summary.mostPressuredCard.credit_usage_percentage.toFixed(1)}% usado • ${formatBrazilianCurrency(summary.mostPressuredCard.available_credit)} livres`
+                                            : 'Nenhum cartão encontrado'}
                                     </p>
                                 </div>
                             </div>
@@ -264,7 +286,22 @@ export default function ReportAccounts({
                                                                         width: 0,
                                                                     }}
                                                                     animate={{
-                                                                        width: `${Math.min(account.share_of_balance, 100)}%`,
+                                                                        width: `${
+                                                                            account.type ===
+                                                                            'credit_card'
+                                                                                ? Math.min(
+                                                                                      Math.max(
+                                                                                          100 -
+                                                                                              account.credit_usage_percentage,
+                                                                                          4,
+                                                                                      ),
+                                                                                      100,
+                                                                                  )
+                                                                                : Math.min(
+                                                                                      account.share_of_balance,
+                                                                                      100,
+                                                                                  )
+                                                                        }%`,
                                                                     }}
                                                                     transition={{
                                                                         duration: 0.55,
@@ -286,11 +323,15 @@ export default function ReportAccounts({
                                                     <div className="grid gap-3 text-right sm:grid-cols-2 xl:min-w-[520px] xl:grid-cols-5">
                                                         <div>
                                                             <p className="text-[12px] tracking-[0.14em] text-[#66707C] uppercase">
-                                                                Saldo
+                                                                {primaryBalanceLabel(
+                                                                    account,
+                                                                )}
                                                             </p>
                                                             <p className="mt-2 text-[18px] font-medium text-white">
                                                                 {formatBrazilianCurrency(
-                                                                    account.current_balance,
+                                                                    primaryBalanceValue(
+                                                                        account,
+                                                                    ),
                                                                 )}
                                                             </p>
                                                         </div>
@@ -340,12 +381,16 @@ export default function ReportAccounts({
                                                         </div>
                                                         <div>
                                                             <p className="text-[12px] tracking-[0.14em] text-[#66707C] uppercase">
-                                                                Movimentos
+                                                                {secondaryBalanceLabel(
+                                                                    account,
+                                                                )}
                                                             </p>
                                                             <p className="mt-2 text-[18px] font-medium text-white">
-                                                                {
-                                                                    account.transactions_count
-                                                                }
+                                                                {formatBrazilianCurrency(
+                                                                    secondaryBalanceValue(
+                                                                        account,
+                                                                    ),
+                                                                )}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -372,8 +417,8 @@ export default function ReportAccounts({
                                         Leitura estrutural
                                     </p>
                                     <p className="mt-1 text-[14px] text-[#7F8794]">
-                                        Oportunidades para distribuir melhor o
-                                        seu caixa.
+                                        Oportunidades para equilibrar melhor
+                                        caixa e crédito disponível.
                                     </p>
                                 </div>
                             </div>

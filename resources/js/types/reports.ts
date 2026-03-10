@@ -57,6 +57,8 @@ export type ReportsPageProps = {
         income: number;
         expense: number;
         net: number;
+        cashBalance: number;
+        availableCredit: number;
         topCategory: ReportCategoryBreakdown | null;
         activeReports: number;
         comingSoonReports: number;
@@ -98,14 +100,18 @@ export type ReportCashflowPageProps = {
 export type ReportAccountHealthItem = {
     id: number;
     name: string;
+    type: string;
     type_label: string;
     color: string;
     current_balance: number;
     initial_balance: number;
+    credit_limit: number;
+    available_credit: number;
     income: number;
     expense: number;
     net: number;
     share_of_balance: number;
+    credit_usage_percentage: number;
     transactions_count: number;
 };
 
@@ -113,12 +119,13 @@ export type ReportAccountsPageProps = {
     activePeriod: string;
     periodOptions: ReportPeriodOption[];
     summary: {
-        totalBalance: number;
+        totalCashBalance: number;
+        totalAvailableCredit: number;
         accountsCount: number;
-        positiveAccounts: number;
-        negativeAccounts: number;
-        topBalanceAccount: ReportAccountHealthItem | null;
-        worstNetAccount: ReportAccountHealthItem | null;
+        cashAccountsCount: number;
+        creditAccountsCount: number;
+        topCashAccount: ReportAccountHealthItem | null;
+        mostPressuredCard: ReportAccountHealthItem | null;
     };
     accounts: ReportAccountHealthItem[];
     insights: ReportInsight[];

@@ -83,6 +83,7 @@ export default function AccountComposerModal({
         ? (accountTypeThemes[activeType.value] ?? accountTypeThemes.checking)
         : accountTypeThemes.checking;
     const previewBalance = Number.parseFloat(data.initial_balance || '0');
+    const isCreditCard = data.type === 'credit_card';
     const previewColor = normalizeHexColor(data.color);
     const previewColorRgb = hexToRgb(previewColor);
 
@@ -511,7 +512,9 @@ export default function AccountComposerModal({
                                                     <div className="grid gap-4 md:grid-cols-2">
                                                         <div className="space-y-2">
                                                             <label className="text-[13px] tracking-[0.12em] text-[#7F8794] uppercase">
-                                                                Saldo / Limite
+                                                                {isCreditCard
+                                                                    ? 'Limite do Cartão'
+                                                                    : 'Saldo Inicial'}
                                                             </label>
                                                             <input
                                                                 value={
@@ -698,7 +701,9 @@ export default function AccountComposerModal({
                                                                 'Nome da Instituição'}
                                                         </p>
                                                         <p className="mt-10 text-[13px] tracking-[0.14em] text-[#DDE7F4] uppercase">
-                                                            Saldo / Limite
+                                                            {isCreditCard
+                                                                ? 'Limite Total'
+                                                                : 'Saldo Inicial'}
                                                         </p>
                                                         <p className="mt-2 text-[26px] font-semibold text-white">
                                                             {formatBrazilianCurrency(
@@ -709,6 +714,15 @@ export default function AccountComposerModal({
                                                                     : previewBalance,
                                                             )}
                                                         </p>
+                                                        {isCreditCard ? (
+                                                            <p className="mt-2 text-[13px] text-[#D8E0EA]">
+                                                                O limite
+                                                                disponível será
+                                                                recalculado a
+                                                                cada transação
+                                                                do cartão.
+                                                            </p>
+                                                        ) : null}
                                                     </div>
                                                 </div>
                                             </div>

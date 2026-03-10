@@ -30,6 +30,8 @@ class Account extends Model
         'currency',
         'initial_balance',
         'current_balance',
+        'credit_limit',
+        'available_credit',
         'color',
         'is_active',
     ];
@@ -42,8 +44,15 @@ class Account extends Model
         return [
             'initial_balance' => 'decimal:2',
             'current_balance' => 'decimal:2',
+            'credit_limit' => 'decimal:2',
+            'available_credit' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function isCreditCard(): bool
+    {
+        return $this->type === 'credit_card';
     }
 
     public function scopeOrdered(Builder $query): Builder

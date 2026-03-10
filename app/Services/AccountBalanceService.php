@@ -17,8 +17,18 @@ class AccountBalanceService
             ->where('type', 'expense')
             ->sum('amount');
 
+        if ($account->isCreditCard()) {
+            $account->forceFill([
+                'current_balance' => 0,
+                'available_credit' => (float) $account->credit_limit + $income - $expense,
+            ])->save();
+
+            return;
+        }
+
         $account->forceFill([
             'current_balance' => (float) $account->initial_balance + $income - $expense,
+            'available_credit' => null,
         ])->save();
     }
 

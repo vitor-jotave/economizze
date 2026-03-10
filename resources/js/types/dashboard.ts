@@ -4,12 +4,14 @@ export type DashboardMetricTrend = {
 };
 
 export type DashboardSummary = {
-    currentBalance: number;
+    cashBalance: number;
+    availableCredit: number;
     totalIncome: number;
     totalExpense: number;
     netResult: number;
     transactionCount: number;
-    accountsCount: number;
+    cashAccountsCount: number;
+    creditAccountsCount: number;
     categoriesCount: number;
 };
 
@@ -24,9 +26,11 @@ export type DashboardCategoryBreakdown = {
 export type DashboardAccountSnapshot = {
     id: number;
     name: string;
+    type: string;
     type_label: string;
     color: string;
-    current_balance: number;
+    primary_amount: number;
+    primary_label: string;
 };
 
 export type DashboardRecentTransaction = {
@@ -62,7 +66,8 @@ export type DashboardPeriodOption = {
 export type DashboardPageProps = {
     summary: DashboardSummary;
     trends: {
-        balance: DashboardMetricTrend;
+        cashBalance: DashboardMetricTrend;
+        availableCredit: DashboardMetricTrend;
         income: DashboardMetricTrend;
         expense: DashboardMetricTrend;
         netResult: DashboardMetricTrend;

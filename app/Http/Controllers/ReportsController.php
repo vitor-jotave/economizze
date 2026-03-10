@@ -23,6 +23,12 @@ class ReportsController extends Controller
         $previousWindow = $this->previousPeriodBounds($currentWindow);
         $totalIncome = $this->transactionTotal('income', $currentWindow);
         $totalExpense = $this->transactionTotal('expense', $currentWindow);
+        $cashBalance = (float) Account::query()
+            ->where('type', '!=', 'credit_card')
+            ->sum('current_balance');
+        $availableCredit = (float) Account::query()
+            ->where('type', 'credit_card')
+            ->sum('available_credit');
         $categoryBreakdown = $this->categoryBreakdown(
             $currentWindow,
             $previousWindow,
@@ -36,6 +42,8 @@ class ReportsController extends Controller
                 'income' => $totalIncome,
                 'expense' => $totalExpense,
                 'net' => $totalIncome - $totalExpense,
+                'cashBalance' => $cashBalance,
+                'availableCredit' => $availableCredit,
                 'topCategory' => $topCategory,
                 'activeReports' => 3,
                 'comingSoonReports' => 0,
@@ -88,12 +96,17 @@ class ReportsController extends Controller
                     'accentColor' => '#7C8CFF',
                     'metrics' => [
                         [
-                            'label' => 'Contas ativas',
-                            'value' => Account::query()->where('is_active', true)->count(),
+                            'label' => 'Caixa disponível',
+                            'value' => 'R$ '.number_format($cashBalance, 2, ',', '.'),
                         ],
                         [
-                            'label' => 'Maior saldo',
+                            'label' => 'Crédito disponível',
+                            'value' => 'R$ '.number_format($availableCredit, 2, ',', '.'),
+                        ],
+                        [
+                            'label' => 'Maior caixa',
                             'value' => Account::query()
+                                ->where('type', '!=', 'credit_card')
                                 ->orderByDesc('current_balance')
                                 ->value('name') ?? 'Sem dados',
                         ],
@@ -184,24 +197,36 @@ class ReportsController extends Controller
         );
         $currentWindow = $this->periodBounds($period['days']);
         $accounts = $this->accountHealthBreakdown($currentWindow);
-        $totalBalance = $accounts->sum('current_balance');
-        $topBalanceAccount = $accounts->sortByDesc('current_balance')->first();
-        $worstNetAccount = $accounts->sortBy('net')->first();
+        $totalCashBalance = $accounts
+            ->reject(fn (array $account): bool => $account['type'] === 'credit_card')
+            ->sum('current_balance');
+        $totalAvailableCredit = $accounts
+            ->filter(fn (array $account): bool => $account['type'] === 'credit_card')
+            ->sum('available_credit');
+        $topCashAccount = $accounts
+            ->reject(fn (array $account): bool => $account['type'] === 'credit_card')
+            ->sortByDesc('current_balance')
+            ->first();
+        $mostPressuredCard = $accounts
+            ->filter(fn (array $account): bool => $account['type'] === 'credit_card')
+            ->sortByDesc('credit_usage_percentage')
+            ->first();
 
         return Inertia::render('reports/accounts', [
             'activePeriod' => $period['key'],
             'periodOptions' => $this->periodOptions(),
             'summary' => [
-                'totalBalance' => $totalBalance,
+                'totalCashBalance' => $totalCashBalance,
+                'totalAvailableCredit' => $totalAvailableCredit,
                 'accountsCount' => $accounts->count(),
-                'positiveAccounts' => $accounts->filter(
-                    fn (array $account): bool => $account['net'] > 0,
+                'cashAccountsCount' => $accounts->filter(
+                    fn (array $account): bool => $account['type'] !== 'credit_card',
                 )->count(),
-                'negativeAccounts' => $accounts->filter(
-                    fn (array $account): bool => $account['net'] < 0,
+                'creditAccountsCount' => $accounts->filter(
+                    fn (array $account): bool => $account['type'] === 'credit_card',
                 )->count(),
-                'topBalanceAccount' => $topBalanceAccount,
-                'worstNetAccount' => $worstNetAccount,
+                'topCashAccount' => $topCashAccount,
+                'mostPressuredCard' => $mostPressuredCard,
             ],
             'accounts' => $accounts->values()->all(),
             'insights' => $this->accountHealthInsights(
@@ -308,14 +333,18 @@ class ReportsController extends Controller
      * @return Collection<int, array{
      *     id: int,
      *     name: string,
+     *     type: string,
      *     type_label: string,
      *     color: string,
      *     current_balance: float,
      *     initial_balance: float,
+     *     credit_limit: float,
+     *     available_credit: float,
      *     income: float,
      *     expense: float,
      *     net: float,
      *     share_of_balance: float,
+     *     credit_usage_percentage: float,
      *     transactions_count: int
      * }>
      */
@@ -358,20 +387,35 @@ class ReportsController extends Controller
                 return [
                     'id' => $account->id,
                     'name' => $account->name,
+                    'type' => $account->type,
                     'type_label' => Account::TYPES[$account->type] ?? $account->type,
                     'color' => $account->color ?? '#B5F955',
                     'current_balance' => (float) $account->current_balance,
                     'initial_balance' => (float) $account->initial_balance,
+                    'credit_limit' => (float) ($account->credit_limit ?? 0),
+                    'available_credit' => (float) ($account->available_credit ?? 0),
                     'income' => $income,
                     'expense' => $expense,
                     'net' => $income - $expense,
                     'share_of_balance' => $totalBalance > 0
                         ? round(((float) $account->current_balance / $totalBalance) * 100, 1)
                         : 0,
+                    'credit_usage_percentage' => $account->isCreditCard()
+                        && (float) ($account->credit_limit ?? 0) > 0
+                        ? round(
+                            (((float) ($account->credit_limit ?? 0) - (float) ($account->available_credit ?? 0))
+                                / (float) ($account->credit_limit ?? 0)) * 100,
+                            1,
+                        )
+                        : 0,
                     'transactions_count' => (int) ($account->current_transactions_count ?? 0),
                 ];
             })
-            ->sortByDesc('current_balance')
+            ->sortByDesc(
+                fn (array $account): float => $account['type'] === 'credit_card'
+                    ? $account['available_credit']
+                    : $account['current_balance'],
+            )
             ->values();
     }
 
@@ -598,14 +642,18 @@ class ReportsController extends Controller
      * @param  Collection<int, array{
      *     id: int,
      *     name: string,
+     *     type: string,
      *     type_label: string,
      *     color: string,
      *     current_balance: float,
      *     initial_balance: float,
+     *     credit_limit: float,
+     *     available_credit: float,
      *     income: float,
      *     expense: float,
      *     net: float,
      *     share_of_balance: float,
+     *     credit_usage_percentage: float,
      *     transactions_count: int
      * }>  $accounts
      * @return list<array{id: string, title: string, description: string, tone: string}>
@@ -615,12 +663,19 @@ class ReportsController extends Controller
         string $periodLabel,
     ): array {
         $insights = [];
-        $topBalanceAccount = $accounts->sortByDesc('current_balance')->first();
-        $worstNetAccount = $accounts->sortBy('net')->first();
-        $idleAccount = $accounts->first(
+        $cashAccounts = $accounts->reject(
+            fn (array $account): bool => $account['type'] === 'credit_card',
+        );
+        $creditCards = $accounts->filter(
+            fn (array $account): bool => $account['type'] === 'credit_card',
+        );
+        $topBalanceAccount = $cashAccounts->sortByDesc('current_balance')->first();
+        $worstNetAccount = $cashAccounts->sortBy('net')->first();
+        $idleAccount = $cashAccounts->first(
             fn (array $account): bool => $account['transactions_count'] === 0
                 && $account['current_balance'] > 0,
         );
+        $pressuredCard = $creditCards->sortByDesc('credit_usage_percentage')->first();
 
         if ($topBalanceAccount && $topBalanceAccount['share_of_balance'] >= 55) {
             $insights[] = [
@@ -637,6 +692,15 @@ class ReportsController extends Controller
                 'title' => "{$worstNetAccount['name']} drenou caixa em {$periodLabel}",
                 'description' => "O saldo operacional da conta ficou em {$worstNetAccount['net']} no período. Rever as saídas aqui pode aliviar a pressão sem mexer no resto da estrutura.",
                 'tone' => 'critical',
+            ];
+        }
+
+        if ($pressuredCard && $pressuredCard['credit_usage_percentage'] >= 70) {
+            $insights[] = [
+                'id' => 'credit-card-pressure',
+                'title' => "{$pressuredCard['name']} está pressionando o crédito",
+                'description' => "O cartão já consumiu {$pressuredCard['credit_usage_percentage']}% do limite. Antecipar pagamentos aqui devolve folga sem mexer no caixa imediato.",
+                'tone' => 'warning',
             ];
         }
 

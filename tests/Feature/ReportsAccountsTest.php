@@ -7,13 +7,23 @@ use App\Models\Transaction;
 it('renders the account health report with balance and net summaries', function () {
     $primary = Account::factory()->create([
         'name' => 'Nubank',
+        'type' => 'checking',
         'current_balance' => 4200,
         'initial_balance' => 2500,
     ]);
     $secondary = Account::factory()->create([
         'name' => 'Inter',
+        'type' => 'savings',
         'current_balance' => 800,
         'initial_balance' => 900,
+    ]);
+    Account::factory()->create([
+        'name' => 'Cartão Black',
+        'type' => 'credit_card',
+        'current_balance' => 0,
+        'initial_balance' => 0,
+        'credit_limit' => 10000,
+        'available_credit' => 7600,
     ]);
     $incomeCategory = Category::factory()->create([
         'type' => 'income',
@@ -53,13 +63,14 @@ it('renders the account health report with balance and net summaries', function 
         fn ($page) => $page
             ->component('reports/accounts')
             ->where('activePeriod', '30d')
-            ->where('summary.totalBalance', 5000)
-            ->where('summary.accountsCount', 2)
-            ->where('summary.positiveAccounts', 1)
-            ->where('summary.negativeAccounts', 1)
-            ->where('summary.topBalanceAccount.name', 'Nubank')
-            ->where('summary.worstNetAccount.name', 'Inter')
-            ->has('accounts', 2)
+            ->where('summary.totalCashBalance', 5000)
+            ->where('summary.totalAvailableCredit', 7600)
+            ->where('summary.accountsCount', 3)
+            ->where('summary.cashAccountsCount', 2)
+            ->where('summary.creditAccountsCount', 1)
+            ->where('summary.topCashAccount.name', 'Nubank')
+            ->where('summary.mostPressuredCard.name', 'Cartão Black')
+            ->has('accounts', 3)
             ->has('insights'),
     );
 });

@@ -276,20 +276,26 @@ export default function Dashboard(): ReactElement {
                         </div>
                     </motion.div>
 
-                    <section className="grid gap-4 xl:grid-cols-4">
+                    <section className="grid gap-4 xl:grid-cols-5">
                         <MetricCard
-                            title="Saldo atual"
-                            value={formatBrazilianCurrency(
-                                summary.currentBalance,
-                            )}
-                            trend={trends.balance}
+                            title="Caixa disponível"
+                            value={formatBrazilianCurrency(summary.cashBalance)}
+                            trend={trends.cashBalance}
                             delay={0.04}
+                        />
+                        <MetricCard
+                            title="Crédito disponível"
+                            value={formatBrazilianCurrency(
+                                summary.availableCredit,
+                            )}
+                            trend={trends.availableCredit}
+                            delay={0.08}
                         />
                         <MetricCard
                             title="Total de receitas"
                             value={formatBrazilianCurrency(summary.totalIncome)}
                             trend={trends.income}
-                            delay={0.08}
+                            delay={0.12}
                         />
                         <MetricCard
                             title="Total de despesas"
@@ -297,13 +303,13 @@ export default function Dashboard(): ReactElement {
                                 summary.totalExpense,
                             )}
                             trend={trends.expense}
-                            delay={0.12}
+                            delay={0.16}
                         />
                         <MetricCard
                             title="Resultado do período"
                             value={formatBrazilianCurrency(summary.netResult)}
                             trend={trends.netResult}
-                            delay={0.16}
+                            delay={0.2}
                         />
                     </section>
 
@@ -456,12 +462,12 @@ export default function Dashboard(): ReactElement {
                             >
                                 {[
                                     [
-                                        'Contas ativas',
-                                        String(summary.accountsCount),
+                                        'Contas de caixa',
+                                        String(summary.cashAccountsCount),
                                     ],
                                     [
-                                        'Transações',
-                                        String(summary.transactionCount),
+                                        'Cartões',
+                                        String(summary.creditAccountsCount),
                                     ],
                                 ].map(([label, value], index) => (
                                     <div
@@ -670,7 +676,7 @@ export default function Dashboard(): ReactElement {
                         >
                             <div className="border-b border-[#171C24] px-6 py-5">
                                 <h2 className="font-mono text-[28px] font-medium tracking-[-0.04em] text-white">
-                                    Contas
+                                    Caixa & Crédito
                                 </h2>
                             </div>
 
@@ -704,11 +710,16 @@ export default function Dashboard(): ReactElement {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <p className="text-[16px] font-medium text-white">
-                                                {formatBrazilianCurrency(
-                                                    account.current_balance,
-                                                )}
-                                            </p>
+                                            <div className="text-right">
+                                                <p className="text-[12px] tracking-[0.14em] text-[#7D848F] uppercase">
+                                                    {account.primary_label}
+                                                </p>
+                                                <p className="mt-1 text-[16px] font-medium text-white">
+                                                    {formatBrazilianCurrency(
+                                                        account.primary_amount,
+                                                    )}
+                                                </p>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 ))}

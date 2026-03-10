@@ -37,5 +37,16 @@ class AccountSeeder extends Seeder
             'current_balance' => 420.90,
             'color' => '#F0C75E',
         ]);
+
+        Account::factory()->create([
+            'name' => 'Cartão Nubank',
+            'type' => 'credit_card',
+            'institution' => 'Nubank',
+            'initial_balance' => 0,
+            'current_balance' => 0,
+            'credit_limit' => 6500.00,
+            'available_credit' => 6500.00,
+            'color' => '#8B8CFF',
+        ]);
     }
 }

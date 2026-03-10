@@ -23,7 +23,6 @@ const variantClasses: Record<AppButtonVariant, string> = {
 export default function AppButton({
     children,
     loading = false,
-    loadingLabel,
     variant = 'dark',
     className,
     disabled,

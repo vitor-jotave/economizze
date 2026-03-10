@@ -36,9 +36,9 @@ class AccountRequest extends FormRequest
             'type.required' => 'Selecione o tipo da conta.',
             'type.in' => 'Selecione um tipo de conta valido.',
             'currency.size' => 'A moeda deve ter exatamente 3 caracteres.',
-            'initial_balance.required' => 'Informe o saldo inicial.',
-            'initial_balance.numeric' => 'O saldo inicial deve ser numerico.',
-            'initial_balance.min' => 'O saldo inicial nao pode ser negativo.',
+            'initial_balance.required' => 'Informe o saldo inicial ou limite.',
+            'initial_balance.numeric' => 'O saldo inicial ou limite deve ser numerico.',
+            'initial_balance.min' => 'O saldo inicial ou limite nao pode ser negativo.',
             'color.regex' => 'A cor deve estar no formato hexadecimal.',
         ];
     }

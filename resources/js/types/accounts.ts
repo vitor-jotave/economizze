@@ -7,6 +7,8 @@ export type Account = {
     currency: string;
     initial_balance: number;
     current_balance: number;
+    credit_limit: number;
+    available_credit: number;
     color: string;
     updated_at: string | null;
 };

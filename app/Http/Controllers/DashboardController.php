@@ -26,7 +26,16 @@ class DashboardController extends Controller
         $previousIncome = $this->transactionTotal('income', $previousWindow);
         $previousExpense = $this->transactionTotal('expense', $previousWindow);
 
-        $currentBalance = (float) Account::query()->sum('current_balance');
+        $cashAccounts = Account::query()
+            ->where('type', '!=', 'credit_card')
+            ->get();
+        $creditAccounts = Account::query()
+            ->where('type', 'credit_card')
+            ->get();
+        $cashBalance = (float) $cashAccounts->sum('current_balance');
+        $availableCredit = (float) $creditAccounts->sum('available_credit');
+        $initialCashBalance = (float) $cashAccounts->sum('initial_balance');
+        $creditLimit = (float) $creditAccounts->sum('credit_limit');
         $netResult = $currentIncome - $currentExpense;
         $previousNetResult = $previousIncome - $previousExpense;
 
@@ -86,19 +95,32 @@ class DashboardController extends Controller
 
         $topAccounts = Account::query()
             ->ordered()
-            ->limit(4)
             ->get()
-            ->map(fn (Account $account): array => [
-                'id' => $account->id,
-                'name' => $account->name,
-                'type_label' => Account::TYPES[$account->type] ?? $account->type,
-                'color' => $account->color,
-                'current_balance' => (float) $account->current_balance,
-            ]);
+            ->map(function (Account $account): array {
+                $isCreditCard = $account->isCreditCard();
+
+                return [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'type' => $account->type,
+                    'type_label' => Account::TYPES[$account->type] ?? $account->type,
+                    'color' => $account->color,
+                    'primary_amount' => $isCreditCard
+                        ? (float) ($account->available_credit ?? 0)
+                        : (float) $account->current_balance,
+                    'primary_label' => $isCreditCard
+                        ? 'Limite disponível'
+                        : 'Saldo',
+                ];
+            })
+            ->sortByDesc('primary_amount')
+            ->take(4)
+            ->values();
 
         return Inertia::render('dashboard', [
             'summary' => [
-                'currentBalance' => $currentBalance,
+                'cashBalance' => $cashBalance,
+                'availableCredit' => $availableCredit,
                 'totalIncome' => $currentIncome,
                 'totalExpense' => $currentExpense,
                 'netResult' => $netResult,
@@ -108,11 +130,13 @@ class DashboardController extends Controller
                         $currentWindow['end'],
                     ])
                     ->count(),
-                'accountsCount' => Account::query()->count(),
+                'cashAccountsCount' => $cashAccounts->count(),
+                'creditAccountsCount' => $creditAccounts->count(),
                 'categoriesCount' => $expenseByCategory->count(),
             ],
             'trends' => [
-                'balance' => $this->trend($currentBalance, (float) Account::query()->sum('initial_balance')),
+                'cashBalance' => $this->trend($cashBalance, $initialCashBalance),
+                'availableCredit' => $this->trend($availableCredit, $creditLimit),
                 'income' => $this->trend($currentIncome, $previousIncome),
                 'expense' => $this->trend($currentExpense, $previousExpense, invert: true),
                 'netResult' => $this->trend($netResult, $previousNetResult),

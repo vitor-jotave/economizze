@@ -33,6 +33,29 @@ it('creates an account', function () {
     ]);
 });
 
+it('creates a credit card account with limit fields instead of balance fields', function () {
+    $response = $this->post(route('accounts.store'), [
+        'name' => 'Cartão Black',
+        'type' => 'credit_card',
+        'institution' => 'Banco XPTO',
+        'currency' => 'BRL',
+        'initial_balance' => 8000,
+        'color' => '#8B8CFF',
+    ]);
+
+    $response->assertRedirect(route('accounts.index'));
+    $response->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('accounts', [
+        'name' => 'Cartão Black',
+        'type' => 'credit_card',
+        'initial_balance' => '0.00',
+        'current_balance' => '0.00',
+        'credit_limit' => '8000.00',
+        'available_credit' => '8000.00',
+    ]);
+});
+
 it('updates an account', function () {
     $account = Account::factory()->create([
         'initial_balance' => 500,

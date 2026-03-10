@@ -17,7 +17,9 @@ class AccountFactory extends Factory
      */
     public function definition(): array
     {
+        $type = fake()->randomElement(array_keys(Account::TYPES));
         $initialBalance = fake()->randomFloat(2, 0, 50000);
+        $isCreditCard = $type === 'credit_card';
 
         return [
             'name' => fake()->randomElement([
@@ -27,11 +29,13 @@ class AccountFactory extends Factory
                 'Cartao travel',
                 'Conta investimentos',
             ]),
-            'type' => fake()->randomElement(array_keys(Account::TYPES)),
+            'type' => $type,
             'institution' => fake()->optional()->company(),
             'currency' => 'BRL',
-            'initial_balance' => $initialBalance,
-            'current_balance' => $initialBalance,
+            'initial_balance' => $isCreditCard ? 0 : $initialBalance,
+            'current_balance' => $isCreditCard ? 0 : $initialBalance,
+            'credit_limit' => $isCreditCard ? $initialBalance : null,
+            'available_credit' => $isCreditCard ? $initialBalance : null,
             'color' => fake()->randomElement([
                 '#B5F955',
                 '#6BE675',

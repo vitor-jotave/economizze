@@ -113,7 +113,9 @@ export default function Reports({
                             </p>
                             <p className="mt-2 text-[14px] text-[#6E7683]">
                                 Entradas:{' '}
-                                {formatBrazilianCurrency(summary.income)}
+                                <span className="text-[#B6F955]">
+                                    {formatBrazilianCurrency(summary.income)}
+                                </span>
                             </p>
                         </motion.article>
                         <motion.article
@@ -123,14 +125,20 @@ export default function Reports({
                             className="rounded-[26px] border border-[#1B212C] bg-[#0C1016] p-6"
                         >
                             <p className="text-[13px] tracking-[0.14em] text-[#7F8794] uppercase">
-                                Cobertura analítica
+                                Crédito disponível
                             </p>
-                            <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-white">
-                                {summary.activeReports}
+                            <p className="mt-4 text-[32px] font-semibold tracking-[-0.05em] text-[#B6F955]">
+                                {formatBrazilianCurrency(
+                                    summary.availableCredit,
+                                )}
                             </p>
                             <p className="mt-2 text-[14px] text-[#6E7683]">
-                                {summary.comingSoonReports} relatórios em
-                                construção
+                                Caixa atual:{' '}
+                                <span className="text-white">
+                                    {formatBrazilianCurrency(
+                                        summary.cashBalance,
+                                    )}
+                                </span>
                             </p>
                         </motion.article>
                     </div>

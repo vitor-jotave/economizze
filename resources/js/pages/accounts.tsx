@@ -110,7 +110,10 @@ export default function Accounts(): ReactElement {
             type: account.type,
             institution: account.institution ?? '',
             currency: account.currency,
-            initial_balance: account.initial_balance.toFixed(2),
+            initial_balance:
+                account.type === 'credit_card'
+                    ? account.credit_limit.toFixed(2)
+                    : account.initial_balance.toFixed(2),
             color: account.color,
         });
     }
@@ -150,6 +153,26 @@ export default function Accounts(): ReactElement {
                 }
             },
         });
+    }
+
+    function primaryAmount(account: Account): number {
+        return account.type === 'credit_card'
+            ? account.available_credit
+            : account.current_balance;
+    }
+
+    function primaryAmountLabel(account: Account): string {
+        return account.type === 'credit_card' ? 'Disponível' : 'Saldo';
+    }
+
+    function secondaryAmountLabel(account: Account): string {
+        return account.type === 'credit_card' ? 'Limite' : 'Inicial';
+    }
+
+    function secondaryAmount(account: Account): number {
+        return account.type === 'credit_card'
+            ? account.credit_limit
+            : account.initial_balance;
     }
 
     return (
@@ -232,7 +255,7 @@ export default function Accounts(): ReactElement {
                     >
                         <div>Conta</div>
                         <div>Tipo</div>
-                        <div>Saldo</div>
+                        <div>Saldo / Limite</div>
                         <div className="text-right">Ações</div>
                     </motion.div>
 
@@ -306,14 +329,23 @@ export default function Accounts(): ReactElement {
                                             </div>
                                             <div>
                                                 <p className="text-[16px] font-medium text-white">
+                                                    {primaryAmountLabel(
+                                                        account,
+                                                    )}
+                                                    :{' '}
                                                     {formatBrazilianCurrency(
-                                                        account.current_balance,
+                                                        primaryAmount(account),
                                                     )}
                                                 </p>
                                                 <p className="text-[13px] text-[#6E7683]">
-                                                    Inicial:{' '}
+                                                    {secondaryAmountLabel(
+                                                        account,
+                                                    )}
+                                                    :{' '}
                                                     {formatBrazilianCurrency(
-                                                        account.initial_balance,
+                                                        secondaryAmount(
+                                                            account,
+                                                        ),
                                                     )}
                                                 </p>
                                             </div>
