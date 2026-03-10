@@ -15,7 +15,7 @@ App de Gestão financeira feito com foco em mim mesmo, não gostei de nenhuma so
 
 - Laravel 12
 - React 19
-- SQLite (Postgres será usado pra prod)
+- PostgreSQL
 
 ## Recursos
 
@@ -24,8 +24,9 @@ App de Gestão financeira feito com foco em mim mesmo, não gostei de nenhuma so
 - CRUD de categorias
 - CRUD de transações
 - Command palette com quick actions e busca global
-- Notification center com atividades recentes (wip)
-- Análises financeiras que me dizem o que fazer (wip)
+- Notification center com alertas sistêmicos e atividades recentes
+- Alertas de limite por categoria com envio opcional para Telegram
+- Análises financeiras de categorias, fluxo e saúde das contas
 - App Desktop e Mobile (roadmap)
 
 ## Execução local
@@ -39,10 +40,52 @@ php artisan migrate --seed
 npm run dev
 ```
 
+## Banco de Dados
+
+Você pode usar o DB que você preferir de acordo com a documentação do laravel. Por padrão o Postgres está sendo utilizado.
+
+Exemplo das variáveis:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=economizze
+DB_USERNAME=postgres
+DB_PASSWORD=secret
+```
+
+Para popular a base:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+Se quiser usar os alertas por Telegram, configure também:
+
+```env
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+TELEGRAM_BASE_URL=https://api.telegram.org
+```
+
 Se não carregar alguma fonte ou imagem, gere os assets para produção com:
 
 ```bash
 npm run build
+```
+
+## Deploy
+
+Configurado para rodar em uma VPS com Coolify, deploy com NIXPACKS (nixpacks.toml).
+
+Para produção, garanta nas variáveis de produção (não utilize o arquivo .env em produção diretamente):
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://seu-dominio.com
 ```
 
 ## Licença
