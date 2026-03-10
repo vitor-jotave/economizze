@@ -1,6 +1,8 @@
 import { usePage } from '@inertiajs/react';
 import { AnimatePresence } from 'motion/react';
 import AppToast from '@/components/app-toast';
+import QuickActionsPalette from '@/components/quick-actions-palette';
+import type { QuickSearchItem } from '@/types/quick-search';
 import type {
     NotificationCenterActivity,
     NotificationCenterItem,
@@ -25,7 +27,7 @@ export default function Layout({
         | 'reports';
     title: string;
 }): ReactElement {
-    const { flash, notificationCenter } = usePage<{
+    const { flash, notificationCenter, quickSearch } = usePage<{
         flash?: {
             success?: {
                 id: string;
@@ -35,8 +37,12 @@ export default function Layout({
         notificationCenter?: {
             activities?: NotificationCenterActivity[];
         };
+        quickSearch?: {
+            items?: QuickSearchItem[];
+        };
     }>().props;
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
     const [recentNotifications, setRecentNotifications] = useState<
         NotificationCenterItem[]
     >([]);
@@ -69,6 +75,26 @@ export default function Layout({
         return () => window.clearTimeout(timeout);
     }, [flash?.success]);
 
+    useEffect(() => {
+        const handleKeydown = (event: KeyboardEvent): void => {
+            if (
+                (event.metaKey || event.ctrlKey) &&
+                event.key.toLowerCase() === 'k'
+            ) {
+                event.preventDefault();
+                setIsQuickActionsOpen(true);
+            }
+
+            if (event.key === 'Escape') {
+                setIsQuickActionsOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeydown);
+
+        return () => window.removeEventListener('keydown', handleKeydown);
+    }, []);
+
     return (
         <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,_#45D86F_0%,_#31CF79_28%,_#55E2B3_58%,_#3FD977_100%)] text-white">
             <div className="min-h-screen bg-[rgba(5,8,12,0.96)]">
@@ -77,6 +103,7 @@ export default function Layout({
                     <Topbar
                         currentPage={currentPage}
                         isNotificationsOpen={isNotificationsOpen}
+                        onOpenQuickActions={() => setIsQuickActionsOpen(true)}
                         onToggleNotifications={() =>
                             setIsNotificationsOpen((current) => !current)
                         }
@@ -101,6 +128,11 @@ export default function Layout({
                 onClose={() => setIsNotificationsOpen(false)}
                 recentNotifications={recentNotifications}
                 activities={notificationCenter?.activities ?? []}
+            />
+            <QuickActionsPalette
+                isOpen={isQuickActionsOpen}
+                onClose={() => setIsQuickActionsOpen(false)}
+                searchItems={quickSearch?.items ?? []}
             />
         </div>
     );

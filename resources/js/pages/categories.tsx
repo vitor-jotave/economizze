@@ -1,6 +1,6 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
     destroy as destroyCategory,
@@ -9,6 +9,7 @@ import {
 } from '@/actions/App/Http/Controllers/CategoryController';
 import AppButton from '@/components/app-button';
 import CategoryIconGlyph from '@/components/category-icon-glyph';
+import { index as categoriesIndex } from '@/routes/categories';
 import type {
     CategoriesPageProps,
     Category,
@@ -25,8 +26,13 @@ const defaultForm: CategoryFormData = {
 };
 
 export default function Categories(): ReactElement {
-    const { categories, categoryTypes } = usePage<CategoriesPageProps>().props;
-    const [search, setSearch] = useState('');
+    const page = usePage<CategoriesPageProps>();
+    const { categories, categoryTypes } = page.props;
+    const [search, setSearch] = useState(
+        () =>
+            new URLSearchParams(page.url.split('?')[1] ?? '').get('search') ??
+            '',
+    );
     const [editingCategory, setEditingCategory] = useState<Category | null>(
         null,
     );
@@ -50,6 +56,18 @@ export default function Categories(): ReactElement {
         );
     }, [categories, deferredSearch]);
 
+    useEffect(() => {
+        const query = new URLSearchParams(page.url.split('?')[1] ?? '');
+        const composer = query.get('composer');
+        const nextSearch = query.get('search') ?? '';
+
+        setSearch((current) => (current === nextSearch ? current : nextSearch));
+
+        if (composer === 'create' && !isComposerOpen) {
+            openCreateFlow();
+        }
+    }, [isComposerOpen, page.url]);
+
     function resetForm(closeComposer = false): void {
         setEditingCategory(null);
         form.reset();
@@ -58,6 +76,18 @@ export default function Categories(): ReactElement {
 
         if (closeComposer) {
             setIsComposerOpen(false);
+
+            const composer = new URLSearchParams(
+                page.url.split('?')[1] ?? '',
+            ).get('composer');
+
+            if (composer === 'create') {
+                router.visit(categoriesIndex.url(), {
+                    preserveScroll: true,
+                    preserveState: false,
+                    replace: true,
+                });
+            }
         }
     }
 

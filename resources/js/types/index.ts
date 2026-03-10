@@ -4,4 +4,5 @@ export type * from './navigation';
 export type * from './categories';
 export type * from './dashboard';
 export type * from './notification-center';
+export type * from './quick-search';
 export type * from './transactions';

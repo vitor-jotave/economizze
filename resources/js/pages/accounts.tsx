@@ -1,7 +1,7 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactElement } from 'react';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import {
     destroy as destroyAccount,
     store as storeAccount,
@@ -9,6 +9,7 @@ import {
 } from '@/actions/App/Http/Controllers/AccountController';
 import AppButton from '@/components/app-button';
 import { formatBrazilianCurrency } from '@/lib/utils';
+import { index as accountsIndex } from '@/routes/accounts';
 import type {
     Account,
     AccountFormData,
@@ -27,8 +28,13 @@ const defaultForm: AccountFormData = {
 };
 
 export default function Accounts(): ReactElement {
-    const { accounts, accountTypes } = usePage<AccountsPageProps>().props;
-    const [search, setSearch] = useState('');
+    const page = usePage<AccountsPageProps>();
+    const { accounts, accountTypes } = page.props;
+    const [search, setSearch] = useState(
+        () =>
+            new URLSearchParams(page.url.split('?')[1] ?? '').get('search') ??
+            '',
+    );
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [isComposerOpen, setIsComposerOpen] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
@@ -56,6 +62,18 @@ export default function Accounts(): ReactElement {
         );
     }, [accounts, deferredSearch]);
 
+    useEffect(() => {
+        const query = new URLSearchParams(page.url.split('?')[1] ?? '');
+        const composer = query.get('composer');
+        const nextSearch = query.get('search') ?? '';
+
+        setSearch((current) => (current === nextSearch ? current : nextSearch));
+
+        if (composer === 'create' && !isComposerOpen) {
+            openCreateFlow();
+        }
+    }, [isComposerOpen, page.url]);
+
     function resetForm(closeComposer = false): void {
         setEditingAccount(null);
         form.reset();
@@ -64,6 +82,18 @@ export default function Accounts(): ReactElement {
 
         if (closeComposer) {
             setIsComposerOpen(false);
+
+            const composer = new URLSearchParams(
+                page.url.split('?')[1] ?? '',
+            ).get('composer');
+
+            if (composer === 'create') {
+                router.visit(accountsIndex.url(), {
+                    preserveScroll: true,
+                    preserveState: false,
+                    replace: true,
+                });
+            }
         }
     }
 

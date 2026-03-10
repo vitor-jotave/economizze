@@ -1,6 +1,6 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import {
     destroy as destroyTransaction,
@@ -10,6 +10,7 @@ import {
 import AppButton from '@/components/app-button';
 import CategoryIconGlyph from '@/components/category-icon-glyph';
 import { formatBrazilianCurrency } from '@/lib/utils';
+import { index as transactionsIndex } from '@/routes/transactions';
 import type {
     Transaction,
     TransactionFormData,
@@ -27,9 +28,14 @@ const defaultForm: TransactionFormData = {
 };
 
 export default function Transactions(): ReactElement {
+    const page = usePage<TransactionsPageProps>();
     const { transactions, transactionTypes, accounts, categories, summary } =
-        usePage<TransactionsPageProps>().props;
-    const [search, setSearch] = useState('');
+        page.props;
+    const [search, setSearch] = useState(
+        () =>
+            new URLSearchParams(page.url.split('?')[1] ?? '').get('search') ??
+            '',
+    );
     const [activeTypeFilter, setActiveTypeFilter] = useState<'all' | string>(
         'all',
     );
@@ -66,6 +72,18 @@ export default function Transactions(): ReactElement {
         });
     }, [activeTypeFilter, deferredSearch, transactions]);
 
+    useEffect(() => {
+        const query = new URLSearchParams(page.url.split('?')[1] ?? '');
+        const composer = query.get('composer');
+        const nextSearch = query.get('search') ?? '';
+
+        setSearch((current) => (current === nextSearch ? current : nextSearch));
+
+        if (composer === 'create' && !isComposerOpen) {
+            openCreateFlow();
+        }
+    }, [isComposerOpen, page.url]);
+
     function resetForm(closeComposer = false): void {
         setEditingTransaction(null);
         form.reset();
@@ -74,6 +92,18 @@ export default function Transactions(): ReactElement {
 
         if (closeComposer) {
             setIsComposerOpen(false);
+
+            const composer = new URLSearchParams(
+                page.url.split('?')[1] ?? '',
+            ).get('composer');
+
+            if (composer === 'create') {
+                router.visit(transactionsIndex.url(), {
+                    preserveScroll: true,
+                    preserveState: false,
+                    replace: true,
+                });
+            }
         }
     }
 

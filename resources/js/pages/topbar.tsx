@@ -39,10 +39,12 @@ type Breadcrumb = {
 
 export default function Topbar({
     isNotificationsOpen,
+    onOpenQuickActions,
     onToggleNotifications,
     currentPage,
 }: {
     isNotificationsOpen: boolean;
+    onOpenQuickActions: () => void;
     onToggleNotifications: () => void;
     currentPage: SidebarPage;
 }): ReactElement {
@@ -128,11 +130,13 @@ export default function Topbar({
                             <circle cx="11" cy="11" r="6" />
                             <path d="m20 20-3.5-3.5" />
                         </svg>
-                        <input
-                            readOnly
-                            value="Search..."
-                            className="h-12 w-full rounded-2xl border border-[#181D25] bg-[#13171E] pr-16 pl-11 text-[15px] text-[#727986] outline-none"
-                        />
+                        <button
+                            type="button"
+                            onClick={onOpenQuickActions}
+                            className="h-12 w-full rounded-2xl border border-[#181D25] bg-[#13171E] pr-16 pl-11 text-left text-[15px] text-[#727986] transition-colors duration-200 outline-none hover:border-[#26303B] hover:bg-[#151B23]"
+                        >
+                            Quick actions, pesquisa rapida...
+                        </button>
                         <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full border border-[#232832] px-2.5 py-1 text-[12px] font-medium text-[#A4ABB7]">
                             ⌘ K
                         </span>

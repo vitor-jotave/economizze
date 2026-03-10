@@ -2,7 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Account;
 use App\Models\Activity;
+use App\Models\Category;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,6 +39,12 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $buildSearchTarget = static function (string $path, string $term): string {
+            return $path.'?'.http_build_query([
+                'search' => $term,
+            ]);
+        };
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -53,6 +62,69 @@ class HandleInertiaRequests extends Middleware
                         'tone' => $activity->tone,
                     ])
                     ->all(),
+            ],
+            'quickSearch' => [
+                'items' => fn (): array => [
+                    ...Account::query()
+                        ->ordered()
+                        ->get()
+                        ->map(fn (Account $account): array => [
+                            'id' => "account-{$account->id}",
+                            'kind' => 'account',
+                            'title' => $account->name,
+                            'subtitle' => $account->institution ?: (Account::TYPES[$account->type] ?? $account->type),
+                            'keywords' => array_values(array_filter([
+                                $account->name,
+                                $account->institution,
+                                $account->currency,
+                                Account::TYPES[$account->type] ?? $account->type,
+                            ])),
+                            'target' => $buildSearchTarget('/accounts', $account->name),
+                        ])
+                        ->all(),
+                    ...Category::query()
+                        ->ordered()
+                        ->get()
+                        ->map(fn (Category $category): array => [
+                            'id' => "category-{$category->id}",
+                            'kind' => 'category',
+                            'title' => $category->name,
+                            'subtitle' => Category::TYPES[$category->type] ?? $category->type,
+                            'keywords' => array_values(array_filter([
+                                $category->name,
+                                $category->slug,
+                                Category::TYPES[$category->type] ?? $category->type,
+                            ])),
+                            'target' => $buildSearchTarget('/categories', $category->name),
+                        ])
+                        ->all(),
+                    ...Transaction::query()
+                        ->with(['account', 'category'])
+                        ->ordered()
+                        ->limit(120)
+                        ->get()
+                        ->map(fn (Transaction $transaction): array => [
+                            'id' => "transaction-{$transaction->id}",
+                            'kind' => 'transaction',
+                            'title' => $transaction->category?->name ?: 'Transação',
+                            'subtitle' => implode(' • ', array_filter([
+                                $transaction->account?->name,
+                                Transaction::TYPES[$transaction->type] ?? $transaction->type,
+                                $transaction->transacted_at?->format('d/m/Y'),
+                            ])),
+                            'keywords' => array_values(array_filter([
+                                $transaction->account?->name,
+                                $transaction->category?->name,
+                                Transaction::TYPES[$transaction->type] ?? $transaction->type,
+                                (string) $transaction->amount,
+                            ])),
+                            'target' => $buildSearchTarget(
+                                '/transactions',
+                                $transaction->category?->name ?: $transaction->account?->name ?: 'transacao',
+                            ),
+                        ])
+                        ->all(),
+                ],
             ],
             'auth' => [
                 'user' => $request->user(),
