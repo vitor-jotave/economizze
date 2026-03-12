@@ -41,4 +41,11 @@ return [
         'base_url' => env('TELEGRAM_BASE_URL', 'https://api.telegram.org'),
     ],
 
+    'kattana_account' => [
+        'url' => env('KATTANA_ACCOUNT_URL'),
+        'app_slug' => env('KATTANA_ACCOUNT_APP_SLUG', 'economizze'),
+        'app_key' => env('KATTANA_ACCOUNT_APP_KEY'),
+        'app_secret' => env('KATTANA_ACCOUNT_APP_SECRET'),
+    ],
+
 ];

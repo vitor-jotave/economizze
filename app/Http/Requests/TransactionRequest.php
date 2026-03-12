@@ -19,6 +19,8 @@ class TransactionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'type' => [
                 'required',
@@ -27,13 +29,23 @@ class TransactionRequest extends FormRequest
             ],
             'amount' => ['required', 'numeric', 'gt:0'],
             'transacted_at' => ['required', 'date'],
-            'account_id' => ['required', 'integer', 'exists:accounts,id'],
+            'account_id' => [
+                'required',
+                'integer',
+                Rule::exists('accounts', 'id')->where(
+                    fn ($query) => $query->where('user_id', $userId),
+                ),
+            ],
             'category_id' => [
                 'required',
                 'integer',
-                'exists:categories,id',
+                Rule::exists('categories', 'id')->where(
+                    fn ($query) => $query->where('user_id', $userId),
+                ),
                 function (string $attribute, mixed $value, \Closure $fail): void {
-                    $category = Category::query()->find($value);
+                    $category = Category::query()
+                        ->where('user_id', $this->user()?->id)
+                        ->find($value);
 
                     if (! $category instanceof Category) {
                         return;

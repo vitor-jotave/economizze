@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Activity;
 use App\Models\Category;
+use App\Models\User;
 use App\Services\CategoryBudgetAlertService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,9 +19,9 @@ class CategoryController extends Controller
         protected CategoryBudgetAlertService $categoryBudgetAlertService,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $categories = Category::query()
+        $categories = $this->user($request)->categories()
             ->ordered()
             ->get()
             ->map(fn (Category $category): array => [
@@ -48,7 +50,9 @@ class CategoryController extends Controller
 
     public function store(CategoryRequest $request): RedirectResponse
     {
-        $category = Category::query()->create($this->validatedAttributes($request));
+        $category = $this->user($request)->categories()->create(
+            $this->validatedAttributes($request),
+        );
 
         $this->categoryBudgetAlertService->evaluateForMonth($category, now());
 
@@ -69,6 +73,7 @@ class CategoryController extends Controller
         CategoryRequest $request,
         Category $category,
     ): RedirectResponse {
+        $category = $this->ownedCategory($request, $category);
         $category->update($this->validatedAttributes($request));
 
         $this->categoryBudgetAlertService->evaluateForMonth($category, now());
@@ -88,11 +93,14 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): RedirectResponse
     {
+        $request = request();
+        $category = $this->ownedCategory($request, $category);
         $categoryName = $category->name;
 
         $category->delete();
 
         Activity::query()->create([
+            'user_id' => $this->user($request)->id,
             'type' => 'category_deleted',
             'title' => sprintf('Categoria "%s" removida.', $categoryName),
             'tone' => 'from-amber-300 to-orange-100',
@@ -136,11 +144,25 @@ class CategoryController extends Controller
         Category $category,
     ): void {
         Activity::query()->create([
+            'user_id' => $category->user_id,
             'type' => $type,
             'title' => $title,
             'tone' => $tone,
             'subject_type' => 'category',
             'subject_id' => $category->id,
         ]);
+    }
+
+    protected function user(Request $request): User
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        return $user;
+    }
+
+    protected function ownedCategory(Request $request, Category $category): Category
+    {
+        return $this->user($request)->categories()->findOrFail($category->id);
     }
 }

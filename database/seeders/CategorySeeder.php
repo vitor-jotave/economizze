@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -13,6 +14,7 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::query()->firstOrFail();
         $categories = [
             ['name' => 'Uber', 'icon' => 'car', 'color' => '#3BA7FF'],
             ['name' => 'Onibus', 'icon' => 'bus', 'color' => '#74E7A8'],
@@ -25,8 +27,12 @@ class CategorySeeder extends Seeder
 
         foreach ($categories as $category) {
             Category::query()->updateOrCreate(
-                ['slug' => Str::slug($category['name'])],
                 [
+                    'user_id' => $user->id,
+                    'slug' => Str::slug($category['name']),
+                ],
+                [
+                    'user_id' => $user->id,
                     'name' => $category['name'],
                     'type' => 'expense',
                     'color' => $category['color'],

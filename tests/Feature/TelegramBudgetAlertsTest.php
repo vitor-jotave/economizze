@@ -38,7 +38,7 @@ it('sends the category budget alert to telegram when the service is configured',
         return str_contains($request->url(), '/bottoken-123/sendMessage')
             && ($data['chat_id'] ?? null) === 'chat-456'
             && ($data['parse_mode'] ?? null) === 'HTML'
-            && str_contains((string) ($data['text'] ?? ''), '<b>Economizze</b>')
+            && str_contains((string) ($data['text'] ?? ''), '<b>🚨 CHEGANDO NO LIMITE, CUIDADO 🚨</b>')
             && str_contains((string) ($data['text'] ?? ''), '<b>Categoria</b>: Internet')
             && str_contains((string) ($data['text'] ?? ''), '<b>Progresso</b>: 90%');
     });

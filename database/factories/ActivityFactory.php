@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Activity;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,6 +21,7 @@ class ActivityFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => auth()->id() ?? User::factory(),
             'type' => fake()->randomElement(['account_created', 'account_updated', 'account_deleted']),
             'title' => fake()->sentence(),
             'tone' => fake()->randomElement([

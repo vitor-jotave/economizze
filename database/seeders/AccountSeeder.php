@@ -3,15 +3,19 @@
 namespace Database\Seeders;
 
 use App\Models\Account;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class AccountSeeder extends Seeder
 {
     public function run(): void
     {
+        $user = User::query()->firstOrFail();
+
         Account::query()->delete();
 
         Account::factory()->create([
+            'user_id' => $user->id,
             'name' => 'Conta principal',
             'type' => 'checking',
             'institution' => 'Nubank',
@@ -21,6 +25,7 @@ class AccountSeeder extends Seeder
         ]);
 
         Account::factory()->create([
+            'user_id' => $user->id,
             'name' => 'Reserva',
             'type' => 'savings',
             'institution' => 'Inter',
@@ -30,6 +35,7 @@ class AccountSeeder extends Seeder
         ]);
 
         Account::factory()->create([
+            'user_id' => $user->id,
             'name' => 'Carteira',
             'type' => 'wallet',
             'institution' => null,
@@ -39,6 +45,7 @@ class AccountSeeder extends Seeder
         ]);
 
         Account::factory()->create([
+            'user_id' => $user->id,
             'name' => 'Cartão Nubank',
             'type' => 'credit_card',
             'institution' => 'Nubank',

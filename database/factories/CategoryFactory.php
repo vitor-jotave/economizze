@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -23,6 +24,7 @@ class CategoryFactory extends Factory
         $name = fake()->unique()->words(fake()->numberBetween(1, 2), true);
 
         return [
+            'user_id' => auth()->id() ?? User::factory(),
             'name' => Str::title($name),
             'slug' => Str::slug($name),
             'type' => fake()->randomElement(array_keys(Category::TYPES)),

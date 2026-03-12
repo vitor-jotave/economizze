@@ -16,6 +16,7 @@ class SystemNotification extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'type',
         'title',
         'body',
@@ -48,5 +49,10 @@ class SystemNotification extends Model
     {
         return $this->belongsTo(Category::class, 'subject_id')
             ->where('subject_type', 'category');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

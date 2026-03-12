@@ -21,6 +21,7 @@ class Transaction extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'type',
         'amount',
         'transacted_at',
@@ -47,6 +48,11 @@ class Transaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function scopeOrdered(Builder $query): Builder

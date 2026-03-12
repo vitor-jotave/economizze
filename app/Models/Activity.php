@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Activity extends Model
 {
@@ -15,6 +16,7 @@ class Activity extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'type',
         'title',
         'tone',
@@ -25,5 +27,10 @@ class Activity extends Model
     public function scopeRecent(Builder $query, int $limit = 5): Builder
     {
         return $query->latest()->limit($limit);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\SystemNotification;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,13 +21,18 @@ class SystemNotificationFactory extends Factory
      */
     public function definition(): array
     {
+        $user = auth()->id() ?? User::factory();
+
         return [
+            'user_id' => $user,
             'type' => 'category_budget_warning',
             'title' => 'Comida está perto do limite mensal.',
             'body' => 'Os gastos da categoria já consumiram 82% do limite deste mês.',
             'tone' => 'from-[#F9D955] to-[#F59E55]',
             'subject_type' => 'category',
-            'subject_id' => Category::factory(),
+            'subject_id' => Category::factory()->state([
+                'user_id' => $user,
+            ]),
             'period_key' => now()->format('Y-m'),
             'threshold_key' => 'warning',
             'payload' => [

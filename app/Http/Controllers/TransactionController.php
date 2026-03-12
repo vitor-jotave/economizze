@@ -7,10 +7,12 @@ use App\Models\Account;
 use App\Models\Activity;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Services\AccountBalanceService;
 use App\Services\CategoryBudgetAlertService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,9 +24,10 @@ class TransactionController extends Controller
         protected CategoryBudgetAlertService $categoryBudgetAlertService,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $transactions = Transaction::query()
+        $user = $this->user($request);
+        $transactions = $user->transactions()
             ->with(['account', 'category'])
             ->ordered()
             ->get()
@@ -57,7 +60,7 @@ class TransactionController extends Controller
                     'label' => $label,
                 ])
                 ->values(),
-            'accounts' => Account::query()
+            'accounts' => $user->accounts()
                 ->ordered()
                 ->get()
                 ->map(fn (Account $account): array => [
@@ -69,7 +72,7 @@ class TransactionController extends Controller
                     'currency' => $account->currency,
                 ])
                 ->values(),
-            'categories' => Category::query()
+            'categories' => $user->categories()
                 ->ordered()
                 ->get()
                 ->map(fn (Category $category): array => [
@@ -82,16 +85,18 @@ class TransactionController extends Controller
                 ])
                 ->values(),
             'summary' => [
-                'income' => (float) Transaction::query()->where('type', 'income')->sum('amount'),
-                'expense' => (float) Transaction::query()->where('type', 'expense')->sum('amount'),
-                'count' => Transaction::query()->count(),
+                'income' => (float) $user->transactions()->where('type', 'income')->sum('amount'),
+                'expense' => (float) $user->transactions()->where('type', 'expense')->sum('amount'),
+                'count' => $user->transactions()->count(),
             ],
         ]);
     }
 
     public function store(TransactionRequest $request): RedirectResponse
     {
-        $transaction = Transaction::query()->create($this->validatedAttributes($request));
+        $transaction = $this->user($request)->transactions()->create(
+            $this->validatedAttributes($request),
+        );
 
         $this->accountBalanceService->refreshFromTransaction($transaction);
         $this->evaluateBudgetAlertsForContexts([
@@ -118,6 +123,7 @@ class TransactionController extends Controller
         TransactionRequest $request,
         Transaction $transaction,
     ): RedirectResponse {
+        $transaction = $this->ownedTransaction($request, $transaction);
         $originalAccountId = $transaction->account_id;
         $originalCategoryId = $transaction->category_id;
         $originalTransactedAt = $transaction->transacted_at?->toDateString();
@@ -127,7 +133,7 @@ class TransactionController extends Controller
         $this->accountBalanceService->refreshFromTransaction($transaction);
 
         if ($originalAccountId !== $transaction->account_id) {
-            $originalAccount = Account::query()->find($originalAccountId);
+            $originalAccount = $this->user($request)->accounts()->find($originalAccountId);
 
             if ($originalAccount instanceof Account) {
                 $this->accountBalanceService->refresh($originalAccount);
@@ -160,6 +166,8 @@ class TransactionController extends Controller
 
     public function destroy(Transaction $transaction): RedirectResponse
     {
+        $request = request();
+        $transaction = $this->ownedTransaction($request, $transaction);
         $account = $transaction->account;
         $amount = (string) $transaction->amount;
         $categoryId = $transaction->category_id;
@@ -179,6 +187,7 @@ class TransactionController extends Controller
         ]);
 
         Activity::query()->create([
+            'user_id' => $this->user($request)->id,
             'type' => 'transaction_deleted',
             'title' => sprintf('Transacao de %s removida.', $amount),
             'tone' => 'from-amber-300 to-orange-100',
@@ -215,6 +224,7 @@ class TransactionController extends Controller
         Transaction $transaction,
     ): void {
         Activity::query()->create([
+            'user_id' => $transaction->user_id,
             'type' => $type,
             'title' => $title,
             'tone' => $tone,
@@ -242,5 +252,20 @@ class TransactionController extends Controller
                     Carbon::parse((string) $context['transacted_at']),
                 );
             });
+    }
+
+    protected function user(Request $request): User
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        return $user;
+    }
+
+    protected function ownedTransaction(
+        Request $request,
+        Transaction $transaction,
+    ): Transaction {
+        return $this->user($request)->transactions()->findOrFail($transaction->id);
     }
 }

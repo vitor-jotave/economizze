@@ -39,7 +39,11 @@ class CategoryRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('categories', 'name')->ignore($category),
+                Rule::unique('categories', 'name')
+                    ->where(
+                        fn ($query) => $query->where('user_id', $this->user()?->id),
+                    )
+                    ->ignore($category),
             ],
             'type' => [
                 'required',

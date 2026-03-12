@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Account;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class AccountFactory extends Factory
         $isCreditCard = $type === 'credit_card';
 
         return [
+            'user_id' => auth()->id() ?? User::factory(),
             'name' => fake()->randomElement([
                 'Carteira principal',
                 'Conta do dia a dia',

@@ -1,5 +1,6 @@
 export type User = {
     id: number;
+    global_uuid: string | null;
     name: string;
     email: string;
     avatar?: string;
@@ -10,5 +11,5 @@ export type User = {
 };
 
 export type Auth = {
-    user: User;
+    user: User | null;
 };

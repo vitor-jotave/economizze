@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AccountRequest;
 use App\Models\Account;
 use App\Models\Activity;
+use App\Models\User;
 use App\Services\AccountBalanceService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,9 +19,10 @@ class AccountController extends Controller
         protected AccountBalanceService $accountBalanceService,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $accounts = Account::query()
+        $user = $this->user($request);
+        $accounts = $user->accounts()
             ->ordered()
             ->get()
             ->map(fn (Account $account): array => [
@@ -47,10 +50,10 @@ class AccountController extends Controller
                 ])
                 ->values(),
             'summary' => [
-                'totalBalance' => (float) Account::query()->sum('current_balance'),
-                'activeAccounts' => Account::query()->where('is_active', true)->count(),
-                'inactiveAccounts' => Account::query()->where('is_active', false)->count(),
-                'institutions' => Account::query()
+                'totalBalance' => (float) $user->accounts()->sum('current_balance'),
+                'activeAccounts' => $user->accounts()->where('is_active', true)->count(),
+                'inactiveAccounts' => $user->accounts()->where('is_active', false)->count(),
+                'institutions' => $user->accounts()
                     ->whereNotNull('institution')
                     ->distinct('institution')
                     ->count('institution'),
@@ -60,7 +63,9 @@ class AccountController extends Controller
 
     public function store(AccountRequest $request): RedirectResponse
     {
-        $account = Account::query()->create($this->validatedAttributes($request));
+        $account = $this->user($request)->accounts()->create(
+            $this->validatedAttributes($request),
+        );
         $this->accountBalanceService->refresh($account);
 
         $message = 'Conta criada com sucesso.';
@@ -80,6 +85,7 @@ class AccountController extends Controller
 
     public function update(AccountRequest $request, Account $account): RedirectResponse
     {
+        $account = $this->ownedAccount($request, $account);
         $account->update($this->validatedAttributes($request));
         $this->accountBalanceService->refresh($account);
 
@@ -100,6 +106,8 @@ class AccountController extends Controller
 
     public function destroy(Account $account): RedirectResponse
     {
+        $request = request();
+        $account = $this->ownedAccount($request, $account);
         $accountName = $account->name;
 
         $account->delete();
@@ -107,6 +115,7 @@ class AccountController extends Controller
         $message = 'Conta removida com sucesso.';
 
         Activity::query()->create([
+            'user_id' => $this->user($request)->id,
             'type' => 'account_deleted',
             'title' => sprintf('Conta "%s" removida.', $accountName),
             'tone' => 'from-amber-300 to-orange-100',
@@ -151,11 +160,25 @@ class AccountController extends Controller
         Account $account,
     ): void {
         Activity::query()->create([
+            'user_id' => $account->user_id,
             'type' => $type,
             'title' => $title,
             'tone' => $tone,
             'subject_type' => 'account',
             'subject_id' => $account->id,
         ]);
+    }
+
+    protected function user(Request $request): User
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        return $user;
+    }
+
+    protected function ownedAccount(Request $request, Account $account): Account
+    {
+        return $this->user($request)->accounts()->findOrFail($account->id);
     }
 }

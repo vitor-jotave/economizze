@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Services\AccountBalanceService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -13,13 +14,14 @@ class TransactionSeeder extends Seeder
 {
     public function run(): void
     {
+        $user = User::query()->firstOrFail();
         Transaction::query()->delete();
 
-        $accounts = Account::query()
+        $accounts = $user->accounts()
             ->orderBy('id')
             ->get();
 
-        $categories = Category::query()
+        $categories = $user->categories()
             ->orderBy('id')
             ->get()
             ->keyBy('name');
@@ -63,6 +65,7 @@ class TransactionSeeder extends Seeder
             }
 
             Transaction::query()->create([
+                'user_id' => $user->id,
                 'type' => $item['type'],
                 'amount' => $item['amount'],
                 'transacted_at' => Carbon::now()->subDays($item['days_ago'])->format('Y-m-d'),
@@ -73,7 +76,7 @@ class TransactionSeeder extends Seeder
 
         $balanceService = app(AccountBalanceService::class);
 
-        Account::query()->get()->each(
+        $user->accounts()->get()->each(
             fn (Account $account) => $balanceService->refresh($account),
         );
     }

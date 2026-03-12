@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -15,6 +16,7 @@ class DashboardController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $this->user();
         $period = $this->resolvePeriod(
             $request->string('period')->toString(),
         );
@@ -26,10 +28,10 @@ class DashboardController extends Controller
         $previousIncome = $this->transactionTotal('income', $previousWindow);
         $previousExpense = $this->transactionTotal('expense', $previousWindow);
 
-        $cashAccounts = Account::query()
+        $cashAccounts = $user->accounts()
             ->where('type', '!=', 'credit_card')
             ->get();
-        $creditAccounts = Account::query()
+        $creditAccounts = $user->accounts()
             ->where('type', 'credit_card')
             ->get();
         $cashBalance = (float) $cashAccounts->sum('current_balance');
@@ -39,7 +41,7 @@ class DashboardController extends Controller
         $netResult = $currentIncome - $currentExpense;
         $previousNetResult = $previousIncome - $previousExpense;
 
-        $expenseByCategory = Category::query()
+        $expenseByCategory = $user->categories()
             ->withSum([
                 'transactions as expense_total' => fn ($query) => $query
                     ->where('type', 'expense')
@@ -67,7 +69,7 @@ class DashboardController extends Controller
                     : 0,
             ]);
 
-        $recentTransactions = Transaction::query()
+        $recentTransactions = $user->transactions()
             ->with(['account', 'category'])
             ->whereBetween('transacted_at', [
                 $currentWindow['start'],
@@ -93,7 +95,7 @@ class DashboardController extends Controller
                 ],
             ]);
 
-        $topAccounts = Account::query()
+        $topAccounts = $user->accounts()
             ->ordered()
             ->get()
             ->map(function (Account $account): array {
@@ -124,7 +126,7 @@ class DashboardController extends Controller
                 'totalIncome' => $currentIncome,
                 'totalExpense' => $currentExpense,
                 'netResult' => $netResult,
-                'transactionCount' => Transaction::query()
+                'transactionCount' => $user->transactions()
                     ->whereBetween('transacted_at', [
                         $currentWindow['start'],
                         $currentWindow['end'],
@@ -213,7 +215,8 @@ class DashboardController extends Controller
      */
     protected function transactionTotal(string $type, array $window): float
     {
-        return (float) Transaction::query()
+        return (float) $this->user()
+            ->transactions()
             ->where('type', $type)
             ->whereBetween('transacted_at', [$window['start'], $window['end']])
             ->sum('amount');
@@ -317,6 +320,14 @@ class DashboardController extends Controller
             'income' => $income,
             'expense' => $expense,
         ];
+    }
+
+    protected function user(): User
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $user;
     }
 
     /**

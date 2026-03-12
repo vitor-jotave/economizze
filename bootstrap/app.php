@@ -27,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        $middleware->redirectGuestsTo(fn (): string => route('auth.kattana.start'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -59,6 +59,7 @@ class CategoryBudgetAlertService
         $spentLabel = number_format($spentAmount, 2, ',', '.');
         $notification = SystemNotification::query()->firstOrCreate(
             [
+                'user_id' => $resolvedCategory->user_id,
                 'type' => 'category_budget_alert',
                 'subject_type' => 'category',
                 'subject_id' => $resolvedCategory->id,

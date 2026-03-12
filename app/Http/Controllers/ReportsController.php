@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Category;
-use App\Models\Transaction;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,6 +16,7 @@ class ReportsController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $this->user();
         $period = $this->resolvePeriod(
             $request->string('period')->toString(),
         );
@@ -23,10 +24,10 @@ class ReportsController extends Controller
         $previousWindow = $this->previousPeriodBounds($currentWindow);
         $totalIncome = $this->transactionTotal('income', $currentWindow);
         $totalExpense = $this->transactionTotal('expense', $currentWindow);
-        $cashBalance = (float) Account::query()
+        $cashBalance = (float) $user->accounts()
             ->where('type', '!=', 'credit_card')
             ->sum('current_balance');
-        $availableCredit = (float) Account::query()
+        $availableCredit = (float) $user->accounts()
             ->where('type', 'credit_card')
             ->sum('available_credit');
         $categoryBreakdown = $this->categoryBreakdown(
@@ -105,7 +106,7 @@ class ReportsController extends Controller
                         ],
                         [
                             'label' => 'Maior caixa',
-                            'value' => Account::query()
+                            'value' => $user->accounts()
                                 ->where('type', '!=', 'credit_card')
                                 ->orderByDesc('current_balance')
                                 ->value('name') ?? 'Sem dados',
@@ -257,7 +258,8 @@ class ReportsController extends Controller
         array $currentWindow,
         array $previousWindow,
     ): Collection {
-        $categories = Category::query()
+        $categories = $this->user()
+            ->categories()
             ->withSum([
                 'transactions as current_total' => fn ($query) => $query
                     ->where('type', 'expense')
@@ -350,7 +352,8 @@ class ReportsController extends Controller
      */
     protected function accountHealthBreakdown(array $window): Collection
     {
-        $accounts = Account::query()
+        $accounts = $this->user()
+            ->accounts()
             ->withSum([
                 'transactions as income_total' => fn ($query) => $query
                     ->where('type', 'income')
@@ -547,11 +550,13 @@ class ReportsController extends Controller
         string $endLabel,
         ?string $startLabel = null,
     ): array {
-        $income = (float) Transaction::query()
+        $income = (float) $this->user()
+            ->transactions()
             ->where('type', 'income')
             ->whereBetween('transacted_at', [$start, $end])
             ->sum('amount');
-        $expense = (float) Transaction::query()
+        $expense = (float) $this->user()
+            ->transactions()
             ->where('type', 'expense')
             ->whereBetween('transacted_at', [$start, $end])
             ->sum('amount');
@@ -797,9 +802,18 @@ class ReportsController extends Controller
      */
     protected function transactionTotal(string $type, array $window): float
     {
-        return (float) Transaction::query()
+        return (float) $this->user()
+            ->transactions()
             ->where('type', $type)
             ->whereBetween('transacted_at', [$window['start'], $window['end']])
             ->sum('amount');
+    }
+
+    protected function user(): User
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $user;
     }
 }
