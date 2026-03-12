@@ -112,7 +112,10 @@ export default function Sidebar({
                                     </svg>
                                 </button>
                             </div>
-                            <div className="overflow-y-auto pr-1">
+                            <div
+                                className="overflow-y-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                                style={{ msOverflowStyle: 'none' }}
+                            >
                                 {content}
                             </div>
                         </motion.aside>
