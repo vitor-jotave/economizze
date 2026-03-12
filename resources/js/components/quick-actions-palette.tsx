@@ -291,7 +291,14 @@ export default function QuickActionsPalette({
                         onClick={onClose}
                     />
 
-                    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh] sm:px-6">
+                    <div
+                        className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh] sm:px-6"
+                        onClick={(event) => {
+                            if (event.target === event.currentTarget) {
+                                onClose();
+                            }
+                        }}
+                    >
                         <motion.section
                             initial={{ opacity: 0, y: 18, scale: 0.98 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}

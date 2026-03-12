@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
+import type { PanInfo } from 'motion/react';
 import type { ReactElement } from 'react';
 import { useEffect, useState } from 'react';
 import AccountTypeSelectionCard, {
@@ -72,6 +73,7 @@ export default function AccountComposerModal({
     setField: (field: keyof AccountFormData, value: AccountFormValue) => void;
 }): ReactElement {
     const [activeTypeIndex, setActiveTypeIndex] = useState(0);
+    const [typeDirection, setTypeDirection] = useState<1 | -1>(1);
     const [isExitPromptOpen, setIsExitPromptOpen] = useState(false);
     const selectedTypeTheme =
         accountTypeThemes[data.type] ?? accountTypeThemes.checking;
@@ -118,6 +120,7 @@ export default function AccountComposerModal({
             return;
         }
 
+        setTypeDirection(-1);
         setActiveTypeIndex((currentIndex) =>
             currentIndex === 0 ? accountTypes.length - 1 : currentIndex - 1,
         );
@@ -128,6 +131,7 @@ export default function AccountComposerModal({
             return;
         }
 
+        setTypeDirection(1);
         setActiveTypeIndex((currentIndex) =>
             currentIndex === accountTypes.length - 1 ? 0 : currentIndex + 1,
         );
@@ -135,6 +139,24 @@ export default function AccountComposerModal({
 
     function requestClose(): void {
         setIsExitPromptOpen(true);
+    }
+
+    function handleTypeCardDragEnd(
+        _: MouseEvent | TouchEvent | PointerEvent,
+        info: PanInfo,
+    ): void {
+        const swipeDistance = info.offset.x;
+        const swipeVelocity = info.velocity.x;
+
+        if (swipeDistance <= -70 || swipeVelocity <= -450) {
+            showNextType();
+
+            return;
+        }
+
+        if (swipeDistance >= 70 || swipeVelocity >= 450) {
+            showPreviousType();
+        }
     }
 
     function cancelClose(): void {
@@ -308,7 +330,7 @@ export default function AccountComposerModal({
                                                                 onClick={
                                                                     showPreviousType
                                                                 }
-                                                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#28303A] bg-[rgba(7,10,15,0.72)] text-[#DCE2EA]"
+                                                                className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#28303A] bg-[rgba(7,10,15,0.72)] text-[#DCE2EA] md:flex"
                                                             >
                                                                 <svg
                                                                     viewBox="0 0 24 24"
@@ -329,9 +351,28 @@ export default function AccountComposerModal({
                                                                     key={
                                                                         activeType.value
                                                                     }
+                                                                    drag="x"
+                                                                    dragConstraints={{
+                                                                        left: 0,
+                                                                        right: 0,
+                                                                    }}
+                                                                    dragElastic={
+                                                                        0.18
+                                                                    }
+                                                                    onDragEnd={
+                                                                        handleTypeCardDragEnd
+                                                                    }
+                                                                    style={{
+                                                                        touchAction:
+                                                                            'pan-y',
+                                                                    }}
                                                                     initial={{
                                                                         opacity: 0,
-                                                                        x: 50,
+                                                                        x:
+                                                                            typeDirection >
+                                                                            0
+                                                                                ? 50
+                                                                                : -50,
                                                                     }}
                                                                     animate={{
                                                                         opacity: 1,
@@ -339,7 +380,11 @@ export default function AccountComposerModal({
                                                                     }}
                                                                     exit={{
                                                                         opacity: 0,
-                                                                        x: -50,
+                                                                        x:
+                                                                            typeDirection >
+                                                                            0
+                                                                                ? -50
+                                                                                : 50,
                                                                     }}
                                                                     transition={{
                                                                         duration: 0.26,
@@ -375,7 +420,7 @@ export default function AccountComposerModal({
                                                                 onClick={
                                                                     showNextType
                                                                 }
-                                                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#28303A] bg-[rgba(7,10,15,0.72)] text-[#DCE2EA]"
+                                                                className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#28303A] bg-[rgba(7,10,15,0.72)] text-[#DCE2EA] md:flex"
                                                             >
                                                                 <svg
                                                                     viewBox="0 0 24 24"

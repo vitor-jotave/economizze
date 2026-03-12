@@ -176,7 +176,7 @@ export default function Transactions(): ReactElement {
                     className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
                 >
                     <div>
-                        <h1 className="font-mono text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
+                        <h1 className="hidden font-mono text-[42px] leading-none font-medium tracking-[-0.05em] text-white md:block">
                             Transações
                         </h1>
                         <p className="mt-3 max-w-155 text-[16px] leading-6 text-[#8B93A0]">

@@ -185,7 +185,7 @@ export default function Accounts(): ReactElement {
                     className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
                 >
                     <div>
-                        <h1 className="font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
+                        <h1 className="hidden font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white md:block">
                             Contas
                         </h1>
                         <p className="mt-3 max-w-[620px] text-[16px] leading-6 text-[#8B93A0]">

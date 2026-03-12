@@ -5,11 +5,13 @@ import type { NavigationItem } from '@/types/navigation';
 type SidebarGroupProps = {
     title: string;
     items: NavigationItem[];
+    onNavigate?: () => void;
 };
 
 export default function SidebarGroup({
     title,
     items,
+    onNavigate,
 }: SidebarGroupProps): ReactElement {
     return (
         <div className="space-y-3">
@@ -48,6 +50,7 @@ export default function SidebarGroup({
                                 key={item.label}
                                 href={item.href}
                                 className={className}
+                                onClick={onNavigate}
                             >
                                 {content}
                             </Link>
@@ -59,6 +62,7 @@ export default function SidebarGroup({
                             key={item.label}
                             type="button"
                             className={className}
+                            onClick={onNavigate}
                         >
                             {content}
                         </button>

@@ -86,8 +86,8 @@ export default function Topbar({
     return (
         <header className="fixed top-0 right-0 left-0 z-20 border-b border-[#171C24] bg-[rgba(5,8,12,0.9)] backdrop-blur-xl xl:left-70">
             <div className="relative flex flex-col gap-5 px-7 py-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-4 text-[#818793] lg:min-w-0">
-                    <div className="relative h-7 min-w-60 overflow-hidden">
+                <div className="flex items-center justify-between gap-4 text-[#818793] lg:min-w-0">
+                    <div className="relative h-12 min-w-0 flex-1 overflow-hidden lg:h-7 lg:min-w-60 lg:flex-none">
                         <AnimatePresence mode="wait" initial={false}>
                             <motion.div
                                 key={`${displayedBreadcrumb.section}-${displayedBreadcrumb.page}`}
@@ -104,21 +104,53 @@ export default function Topbar({
                                         setShouldAnimate(false);
                                     }
                                 }}
-                                className="absolute inset-0 flex items-center gap-3 text-[18px]"
+                                className="absolute inset-0 flex flex-col justify-center gap-0.5 text-[18px] lg:flex-row lg:items-center lg:gap-3"
                             >
-                                <span className="text-[#4E5662]">
+                                <span className="text-[11px] font-semibold tracking-[0.2em] text-[#616874] uppercase lg:text-[18px] lg:font-normal lg:tracking-normal lg:text-[#4E5662] lg:normal-case">
                                     {displayedBreadcrumb.section}
                                 </span>
-                                <span className="text-[#5C636E]">/</span>
+                                <span className="hidden text-[#5C636E] lg:block">
+                                    /
+                                </span>
                                 <span className="font-medium text-white">
                                     {displayedBreadcrumb.page}
                                 </span>
                             </motion.div>
                         </AnimatePresence>
                     </div>
+
+                    <div className="flex items-center gap-3 lg:hidden">
+                        <AppIcon onClick={onOpenQuickActions}>
+                            <svg
+                                viewBox="0 0 24 24"
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                            >
+                                <circle cx="11" cy="11" r="6" />
+                                <path d="m20 20-3.5-3.5" />
+                            </svg>
+                        </AppIcon>
+                        <AppIcon
+                            onClick={onToggleNotifications}
+                            active={isNotificationsOpen}
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                            >
+                                <path d="M12 4a4 4 0 0 1 4 4c0 4 2 5 2 5H6s2-1 2-5a4 4 0 0 1 4-4Z" />
+                                <path d="M10 18a2 2 0 0 0 4 0" />
+                            </svg>
+                        </AppIcon>
+                    </div>
                 </div>
 
-                <div className="flex justify-center lg:absolute lg:top-1/2 lg:left-1/2 lg:w-full lg:max-w-[520px] lg:-translate-x-1/2 lg:-translate-y-1/2">
+                <div className="hidden justify-center lg:absolute lg:top-1/2 lg:left-1/2 lg:flex lg:w-full lg:max-w-[520px] lg:-translate-x-1/2 lg:-translate-y-1/2">
                     <div className="relative w-full max-w-[520px]">
                         <svg
                             viewBox="0 0 24 24"
@@ -143,7 +175,7 @@ export default function Topbar({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 lg:ml-auto">
+                <div className="hidden items-center gap-3 lg:ml-auto lg:flex">
                     <AppIcon
                         onClick={onToggleNotifications}
                         active={isNotificationsOpen}

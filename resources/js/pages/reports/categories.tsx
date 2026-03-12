@@ -65,7 +65,7 @@ export default function ReportCategories({
                                 <span className="inline-flex rounded-full border border-[#2E3E22] bg-[rgba(181,249,85,0.12)] px-3 py-1 text-[12px] font-medium tracking-[0.14em] text-[#B5F955] uppercase">
                                     Report ativo
                                 </span>
-                                <h1 className="mt-5 font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
+                                <h1 className="mt-5 hidden font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white md:block">
                                     Gasto por categoria
                                 </h1>
                                 <p className="mt-4 max-w-[640px] text-[16px] leading-7 text-[#9AA3AF]">

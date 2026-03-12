@@ -52,7 +52,7 @@ export default function ReportCashflow({
                                 <span className="inline-flex rounded-full border border-[#24423B] bg-[rgba(91,226,176,0.12)] px-3 py-1 text-[12px] font-medium tracking-[0.14em] text-[#5BE2B0] uppercase">
                                     Report ativo
                                 </span>
-                                <h1 className="mt-5 font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white">
+                                <h1 className="mt-5 hidden font-['Space_Grotesk'] text-[42px] leading-none font-medium tracking-[-0.05em] text-white md:block">
                                     Fluxo por período
                                 </h1>
                                 <p className="mt-4 max-w-[640px] text-[16px] leading-7 text-[#9AA3AF]">
