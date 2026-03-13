@@ -26,6 +26,23 @@ it('redirects to the kattana launch endpoint', function () {
     );
 });
 
+it('forwards the n parameter only to the kattana launch url', function () {
+    $this->post(route('auth.logout'));
+
+    config()->set('services.kattana_account.url', 'http://kattana-account.test');
+    config()->set('services.kattana_account.app_slug', 'economizze');
+
+    $response = $this->get(route('auth.kattana.start', [
+        'n' => 'calebe',
+    ]));
+
+    $response->assertRedirect(
+        'http://kattana-account.test/apps/economizze/launch?return_to='
+        .urlencode(route('auth.kattana.callback'))
+        .'&n=calebe',
+    );
+});
+
 it('exchanges a valid code and authenticates the local user', function () {
     $this->post(route('auth.logout'));
 

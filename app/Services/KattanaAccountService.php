@@ -9,13 +9,21 @@ class KattanaAccountService
 {
     public function __construct(protected HttpFactory $http) {}
 
-    public function launchUrl(string $returnTo): string
+    public function launchUrl(string $returnTo, ?string $nameHint = null): string
     {
+        $query = [
+            'return_to' => $returnTo,
+        ];
+
+        if (filled($nameHint)) {
+            $query['n'] = $nameHint;
+        }
+
         return sprintf(
-            '%s/apps/%s/launch?return_to=%s',
+            '%s/apps/%s/launch?%s',
             $this->baseUrl(),
             $this->appSlug(),
-            urlencode($returnTo),
+            http_build_query($query),
         );
     }
 

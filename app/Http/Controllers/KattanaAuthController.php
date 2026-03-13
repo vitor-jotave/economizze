@@ -25,6 +25,7 @@ class KattanaAuthController extends Controller
         return redirect()->away(
             $kattanaAccountService->launchUrl(
                 route('auth.kattana.callback'),
+                $request->query('n'),
             ),
         );
     }
