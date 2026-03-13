@@ -28,7 +28,15 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->redirectGuestsTo(fn (): string => route('auth.kattana.start'));
+        $middleware->redirectGuestsTo(function (Request $request): string {
+            $parameters = [];
+
+            if ($request->filled('n')) {
+                $parameters['n'] = $request->query('n');
+            }
+
+            return route('auth.kattana.start', $parameters);
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

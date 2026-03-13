@@ -12,6 +12,16 @@ it('redirects guests that hit the app shell to the kattana flow', function () {
     $response->assertRedirect(route('auth.kattana.start'));
 });
 
+it('preserves the n parameter when redirecting a guest to the kattana flow', function () {
+    $this->post(route('auth.logout'));
+
+    $response = $this->get('/?n=ana');
+
+    $response->assertRedirect(route('auth.kattana.start', [
+        'n' => 'ana',
+    ]));
+});
+
 it('redirects to the kattana launch endpoint', function () {
     $this->post(route('auth.logout'));
 
