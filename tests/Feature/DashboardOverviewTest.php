@@ -3,6 +3,7 @@
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
 
 it('renders the dashboard with aggregated financial data', function () {
     $account = Account::factory()->create([
@@ -62,5 +63,45 @@ it('renders the dashboard with aggregated financial data', function () {
             ->has('recentTransactions')
             ->has('periodOptions', 4)
             ->has('expenseByCategory'),
+    );
+});
+
+it('reflects a newly created expense in the dashboard distribution for the authenticated user', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $account = Account::factory()->create([
+        'user_id' => $user->id,
+        'type' => 'checking',
+        'initial_balance' => 1500,
+        'current_balance' => 1500,
+    ]);
+    $category = Category::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Mercado',
+        'type' => 'expense',
+        'color' => '#FF8A5B',
+        'icon' => 'receipt',
+    ]);
+
+    $this->post(route('transactions.store'), [
+        'type' => 'expense',
+        'amount' => 240.90,
+        'transacted_at' => now()->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+    ])->assertRedirect(route('transactions.index'));
+
+    $response = $this->get(route('home', ['period' => '30d']));
+
+    $response->assertSuccessful();
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('dashboard')
+            ->where('summary.totalExpense', 240.9)
+            ->where('summary.transactionCount', 1)
+            ->has('expenseByCategory', 1)
+            ->where('expenseByCategory.0.name', 'Mercado')
+            ->where('expenseByCategory.0.total', 240.9),
     );
 });

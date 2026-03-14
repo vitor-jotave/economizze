@@ -9,7 +9,7 @@ import {
 } from '@/actions/App/Http/Controllers/TransactionController';
 import AppButton from '@/components/app-button';
 import CategoryIconGlyph from '@/components/category-icon-glyph';
-import { formatBrazilianCurrency } from '@/lib/utils';
+import { formatBrazilianCurrency, getLocalDateInputValue } from '@/lib/utils';
 import { index as transactionsIndex } from '@/routes/transactions';
 import type {
     Transaction,
@@ -19,13 +19,15 @@ import type {
 import Layout from './layout';
 import TransactionComposerModal from './transaction-composer-modal';
 
-const defaultForm: TransactionFormData = {
-    type: 'expense',
-    amount: '',
-    transacted_at: new Date().toISOString().slice(0, 10),
-    account_id: '',
-    category_id: '',
-};
+function defaultFormData(): TransactionFormData {
+    return {
+        type: 'expense',
+        amount: '',
+        transacted_at: getLocalDateInputValue(),
+        account_id: '',
+        category_id: '',
+    };
+}
 
 export default function Transactions(): ReactElement {
     const page = usePage<TransactionsPageProps>();
@@ -44,7 +46,7 @@ export default function Transactions(): ReactElement {
     const [isComposerOpen, setIsComposerOpen] = useState(false);
     const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
     const deferredSearch = useDeferredValue(search);
-    const form = useForm<TransactionFormData>(defaultForm);
+    const form = useForm<TransactionFormData>(defaultFormData());
 
     const filteredTransactions = useMemo(() => {
         const normalizedSearch = deferredSearch.trim().toLowerCase();
@@ -87,7 +89,7 @@ export default function Transactions(): ReactElement {
     function resetForm(closeComposer = false): void {
         setEditingTransaction(null);
         form.reset();
-        form.setData(defaultForm);
+        form.setData(defaultFormData());
         form.clearErrors();
 
         if (closeComposer) {
@@ -119,7 +121,7 @@ export default function Transactions(): ReactElement {
             type: transaction.type,
             amount: transaction.amount.toFixed(2),
             transacted_at:
-                transaction.transacted_at ?? defaultForm.transacted_at,
+                transaction.transacted_at ?? defaultFormData().transacted_at,
             account_id: transaction.account.id
                 ? String(transaction.account.id)
                 : '',
