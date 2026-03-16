@@ -39,6 +39,7 @@ class CategoryBudgetAlertService
         $windowStart = $date->copy()->startOfMonth();
         $windowEnd = $date->copy()->endOfMonth();
         $spentAmount = (float) $resolvedCategory->transactions()
+            ->posted()
             ->where('type', 'expense')
             ->whereBetween('transacted_at', [$windowStart, $windowEnd])
             ->sum('amount');

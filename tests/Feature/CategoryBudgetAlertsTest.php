@@ -105,3 +105,28 @@ it('deduplicates warning notifications and creates an exceeded notification once
         'title' => 'Uber ultrapassou o limite mensal.',
     ]);
 });
+
+it('does not notify for future-dated expenses before they are due', function () {
+    $account = Account::factory()->create([
+        'type' => 'checking',
+    ]);
+    $category = Category::factory()->create([
+        'name' => 'Mercado',
+        'type' => 'expense',
+        'monthly_budget_limit' => 500,
+    ]);
+
+    $this->post(route('transactions.store'), [
+        'type' => 'expense',
+        'amount' => 450,
+        'transacted_at' => now()->addDays(5)->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+    ])->assertRedirect(route('transactions.index'));
+
+    $this->assertDatabaseMissing('system_notifications', [
+        'type' => 'category_budget_alert',
+        'subject_type' => 'category',
+        'subject_id' => $category->id,
+    ]);
+});

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class Transaction extends Model
 {
@@ -58,5 +59,16 @@ class Transaction extends Model
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->latest('transacted_at')->latest('id');
+    }
+
+    public function scopePosted(
+        Builder $query,
+        Carbon|string|null $referenceDate = null,
+    ): Builder {
+        $effectiveDate = $referenceDate instanceof Carbon
+            ? $referenceDate->toDateString()
+            : ($referenceDate ?: today()->toDateString());
+
+        return $query->whereDate('transacted_at', '<=', $effectiveDate);
     }
 }

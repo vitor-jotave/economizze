@@ -85,9 +85,9 @@ class TransactionController extends Controller
                 ])
                 ->values(),
             'summary' => [
-                'income' => (float) $user->transactions()->where('type', 'income')->sum('amount'),
-                'expense' => (float) $user->transactions()->where('type', 'expense')->sum('amount'),
-                'count' => $user->transactions()->count(),
+                'income' => (float) $user->transactions()->posted()->where('type', 'income')->sum('amount'),
+                'expense' => (float) $user->transactions()->posted()->where('type', 'expense')->sum('amount'),
+                'count' => $user->transactions()->posted()->count(),
             ],
         ]);
     }

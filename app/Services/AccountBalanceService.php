@@ -10,10 +10,12 @@ class AccountBalanceService
     public function refresh(Account $account): void
     {
         $income = $account->transactions()
+            ->posted()
             ->where('type', 'income')
             ->sum('amount');
 
         $expense = $account->transactions()
+            ->posted()
             ->where('type', 'expense')
             ->sum('amount');
 

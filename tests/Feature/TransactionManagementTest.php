@@ -131,6 +131,84 @@ it('updates available credit instead of cash balance for credit card accounts', 
     expect($card->refresh()->available_credit)->toBe('4100.00');
 });
 
+it('does not impact current balance with future-dated expenses', function () {
+    $account = Account::factory()->create([
+        'type' => 'checking',
+        'initial_balance' => 1000,
+        'current_balance' => 1000,
+    ]);
+    $category = Category::factory()->create(['type' => 'expense']);
+
+    $this->post(route('transactions.store'), [
+        'type' => 'expense',
+        'amount' => 150,
+        'transacted_at' => now()->addDays(5)->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+    ])->assertRedirect(route('transactions.index'));
+
+    expect($account->refresh()->current_balance)->toBe('1000.00');
+});
+
+it('does not reduce available credit with future-dated card expenses', function () {
+    $card = Account::factory()->create([
+        'type' => 'credit_card',
+        'initial_balance' => 0,
+        'current_balance' => 0,
+        'credit_limit' => 5000,
+        'available_credit' => 5000,
+    ]);
+    $category = Category::factory()->create(['type' => 'expense']);
+
+    $this->post(route('transactions.store'), [
+        'type' => 'expense',
+        'amount' => 900,
+        'transacted_at' => now()->addDays(3)->format('Y-m-d'),
+        'account_id' => $card->id,
+        'category_id' => $category->id,
+    ])->assertRedirect(route('transactions.index'));
+
+    expect($card->refresh()->available_credit)->toBe('5000.00');
+});
+
+it('keeps future-dated transactions out of the current transaction summary', function () {
+    $account = Account::factory()->create(['type' => 'checking']);
+    $expenseCategory = Category::factory()->create(['type' => 'expense']);
+    $incomeCategory = Category::factory()->create(['type' => 'income']);
+
+    Transaction::factory()->create([
+        'type' => 'income',
+        'amount' => 800,
+        'transacted_at' => now()->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $incomeCategory->id,
+    ]);
+
+    Transaction::factory()->create([
+        'type' => 'expense',
+        'amount' => 120,
+        'transacted_at' => now()->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $expenseCategory->id,
+    ]);
+
+    Transaction::factory()->create([
+        'type' => 'expense',
+        'amount' => 650,
+        'transacted_at' => now()->addDays(4)->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $expenseCategory->id,
+    ]);
+
+    $this->get(route('transactions.index'))
+        ->assertInertia(
+            fn ($page) => $page
+                ->where('summary.income', 800)
+                ->where('summary.expense', 120)
+                ->where('summary.count', 2),
+        );
+});
+
 it('validates transaction creation payload', function () {
     $response = $this->post(route('transactions.store'), [
         'type' => 'invalid',

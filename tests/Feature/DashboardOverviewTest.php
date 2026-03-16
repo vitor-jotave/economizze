@@ -105,3 +105,33 @@ it('reflects a newly created expense in the dashboard distribution for the authe
             ->where('expenseByCategory.0.total', 240.9),
     );
 });
+
+it('keeps future-dated expenses out of the current dashboard period', function () {
+    $account = Account::factory()->create([
+        'type' => 'checking',
+        'initial_balance' => 1000,
+        'current_balance' => 1000,
+    ]);
+    $category = Category::factory()->create([
+        'name' => 'Viagem',
+        'type' => 'expense',
+        'color' => '#3BA7FF',
+        'icon' => 'car',
+    ]);
+
+    Transaction::factory()->create([
+        'type' => 'expense',
+        'amount' => 700,
+        'transacted_at' => now()->addDays(7)->format('Y-m-d'),
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+    ]);
+
+    $this->get(route('home', ['period' => '30d']))
+        ->assertInertia(
+            fn ($page) => $page
+                ->where('summary.totalExpense', 0)
+                ->where('summary.transactionCount', 0)
+                ->has('expenseByCategory', 0),
+        );
+});
